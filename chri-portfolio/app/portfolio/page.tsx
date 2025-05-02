@@ -1,6 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useContentProjects } from "@/lib/use-content";
+import { Fade, FadeGroup } from "@/components/motion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import Image from "next/image";
+import { ViewToggle, ViewMode } from "@/components/view-toggle";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { DriveFile } from "@/lib/google-drive";
 import {
   Card,
   CardContent,
@@ -9,80 +18,48 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ExternalLink, Github } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { Fade, FadeGroup } from "@/components/motion";
-import { ViewToggle, type ViewMode } from "@/components/view-toggle";
-
-// Sample project data - replace with your actual projects
-const projects = [
-  {
-    id: 1,
-    title: "Brand Revitalization Campaign",
-    description:
-      "Led a comprehensive brand refresh that increased market recognition by 45% and customer engagement by 60%.",
-    image: "/placeholder.svg?height=300&width=600",
-    tags: ["Branding", "Marketing", "Strategy", "Design"],
-    demoUrl: "https://example.com",
-    githubUrl: "https://github.com",
-  },
-  {
-    id: 2,
-    title: "Digital Transformation Initiative",
-    description:
-      "Spearheaded a company-wide digital transformation that streamlined operations and reduced costs by 30%.",
-    image: "/placeholder.svg?height=300&width=600",
-    tags: ["Leadership", "Innovation", "Digital", "Strategy"],
-    demoUrl: "https://example.com",
-    githubUrl: "https://github.com",
-  },
-  {
-    id: 3,
-    title: "Market Expansion Strategy",
-    description:
-      "Developed and executed a market expansion strategy that resulted in 75% revenue growth in new territories.",
-    image: "/placeholder.svg?height=300&width=600",
-    tags: ["Growth", "Strategy", "Market Analysis", "Business Development"],
-    demoUrl: "https://example.com",
-    githubUrl: "https://github.com",
-  },
-  {
-    id: 4,
-    title: "Brand Revitalization Campaign",
-    description:
-      "Led a comprehensive brand refresh that increased market recognition by 45% and customer engagement by 60%.",
-    image: "/placeholder.svg?height=300&width=600",
-    tags: ["Branding", "Marketing", "Strategy", "Design"],
-    demoUrl: "https://example.com",
-    githubUrl: "https://github.com",
-  },
-  {
-    id: 5,
-    title: "Digital Transformation Initiative",
-    description:
-      "Spearheaded a company-wide digital transformation that streamlined operations and reduced costs by 30%.",
-    image: "/placeholder.svg?height=300&width=600",
-    tags: ["Leadership", "Innovation", "Digital", "Strategy"],
-    demoUrl: "https://example.com",
-    githubUrl: "https://github.com",
-  },
-  {
-    id: 6,
-    title: "Market Expansion Strategy",
-    description:
-      "Developed and executed a market expansion strategy that resulted in 75% revenue growth in new territories.",
-    image: "/placeholder.svg?height=300&width=600",
-    tags: ["Growth", "Strategy", "Market Analysis", "Business Development"],
-    demoUrl: "https://example.com",
-    githubUrl: "https://github.com",
-  },
-];
 
 export default function PortfolioPage() {
+  const [projects, setProjects] = useState<DriveFile[]>([]); // Type the state
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const res = await fetch("/api/projects");
+        if (!res.ok) {
+          // Check if response is JSON and has a message
+          const errorData = await res.json().catch(() => null);
+          const errorMessage =
+            errorData?.message || `Error fetching projects: ${res.status}`;
+          throw new Error(errorMessage);
+        }
+        const response = await res.json();
+        const data: DriveFile[] = response.data || [];
+        setProjects(data);
+        console.log(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProjects();
+  }, []); // Empty dependency array means this runs once on mount
   const [viewMode, setViewMode] = useState<ViewMode>("card-small");
+
+  if (loading) {
+    return <div className="text-center py-8">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500 py-8">{error}</div>;
+  }
+
+  if (!projects) {
+    return <div className="text-center py-8">No projects found</div>;
+  }
 
   return (
     <div className="py-12">
@@ -110,20 +87,20 @@ export default function PortfolioPage() {
             <Fade key={project.id}>
               <div className="flex flex-col md:flex-row gap-6 border rounded-lg p-4 hover:shadow-md transition-all hover:border-primary/50">
                 <div className="md:w-1/3 h-48 relative rounded-md overflow-hidden">
-                  <Image
+                  {/* <Image
                     src={project.image || "/placeholder.svg"}
                     alt={project.title}
                     fill
                     className="object-cover transition-transform duration-500 hover:scale-105"
-                  />
+                  /> */}
                 </div>
                 <div className="md:w-2/3 flex flex-col">
-                  <h2 className="text-2xl font-bold">{project.title}</h2>
+                  <h2 className="text-2xl font-bold">{project.name}</h2>
                   <p className="text-muted-foreground mt-2 mb-4">
-                    {project.description}
+                    {/* {project.description} */} something something
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {project.tags.map((tag) => (
+                    {/* {project.map((tag) => (
                       <Badge
                         key={tag}
                         variant="secondary"
@@ -131,7 +108,7 @@ export default function PortfolioPage() {
                       >
                         {tag}
                       </Badge>
-                    ))}
+                    ))} */}
                   </div>
                   <div className="mt-auto flex gap-4">
                     <Button
@@ -141,26 +118,11 @@ export default function PortfolioPage() {
                       className="transition-all hover:bg-secondary/80"
                     >
                       <Link
-                        href={project.githubUrl}
+                        href={`/portfolio/${project.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <Github className="mr-2 h-4 w-4" />
                         Details
-                      </Link>
-                    </Button>
-                    <Button
-                      asChild
-                      size="sm"
-                      className="transition-all hover:bg-primary/90"
-                    >
-                      <Link
-                        href={project.demoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Case Study
                       </Link>
                     </Button>
                   </div>
@@ -186,20 +148,20 @@ export default function PortfolioPage() {
                     viewMode === "card-large" ? "h-64" : "h-48"
                   }`}
                 >
-                  <Image
+                  {/* <Image
                     src={project.image || "/placeholder.svg"}
                     alt={project.title}
                     fill
                     className="object-cover transition-transform duration-500 hover:scale-110"
-                  />
+                  /> */}
                 </div>
                 <CardHeader>
-                  <CardTitle>{project.title}</CardTitle>
-                  <CardDescription>{project.description}</CardDescription>
+                  <CardTitle>{project.name}</CardTitle>
+                  {/* <CardDescription>{project.description}</CardDescription> */}
                 </CardHeader>
                 <CardContent className="flex-grow">
                   <div className="flex flex-wrap gap-2">
-                    {project.tags.map((tag) => (
+                    {/* {project.tags.map((tag) => (
                       <Badge
                         key={tag}
                         variant="secondary"
@@ -207,7 +169,7 @@ export default function PortfolioPage() {
                       >
                         {tag}
                       </Badge>
-                    ))}
+                    ))} */}
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-between">
@@ -218,26 +180,11 @@ export default function PortfolioPage() {
                     className="transition-all hover:bg-secondary/80"
                   >
                     <Link
-                      href={project.githubUrl}
+                      href={`/portfolio/${project.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Github className="mr-2 h-4 w-4" />
                       Details
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="sm"
-                    className="transition-all hover:bg-primary/90"
-                  >
-                    <Link
-                      href={project.demoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Case Study
                     </Link>
                   </Button>
                 </CardFooter>

@@ -1,0 +1,48 @@
+.pdf-viewer-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.pdf-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: var(--background-secondary);
+  border-radius: 0.5rem;
+}
+
+.pdf-controls button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pdf-controls button:disabled {
+  background: var(--muted);
+  cursor: not-allowed;
+}
+
+.pdf-controls button:hover:not(:disabled) {
+  background: rgba(var(--primary), 0.9);
+}
+
+.pdf-viewer {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  height: 800px;
+  background: white;
+}
+
+.pdf-viewer .react-pdf__Page__canvas {
+  max-width: 100%;
+  height: auto;
+}

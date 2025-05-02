@@ -5,8 +5,19 @@ import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Fade } from "@/components/motion";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    (async () => {
+      const res = await fetch("/api/content");
+      const data = await res.json();
+      setData(data);
+      console.log(data);
+    })();
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] px-4">
       <div className="max-w-3xl mx-auto text-center space-y-6">
