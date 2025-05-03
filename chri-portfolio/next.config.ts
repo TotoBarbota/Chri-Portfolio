@@ -1,7 +1,18 @@
-import type { NextConfig } from "next";
+// next.config.js
 
-const nextConfig: NextConfig = {
-  /* config options here */
+console.log("Loadig next.config.ts");
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true, // Recommended setting
+  // ... any other configurations you had
+
+  images: {
+    remotePatterns: [
+      new URL("https://lh3.googleusercontent.com/drive-storage/**"),
+    ],
+  },
+
+  // ... rest of your next.config.js
 };
 
-export default nextConfig;
+module.exports = nextConfig;

@@ -5,14 +5,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDriveService, DriveFile } from "@/lib/google-drive"; // Adjust path as needed
 
 // Define the expected structure for the blog list response
-type BlogListItem = Pick<DriveFile, "id" | "name" | "modifiedTime">; // Only return these fields
+type BlogListItem = Pick<
+  DriveFile,
+  "id" | "name" | "modifiedTime" | "description"
+> & {
+  thumbnailUrl?: string; // Add thumbnailUrl field
+};
 
 export async function GET(request: NextRequest) {
-  // No need to check req.method in App Router GET function
-
   try {
     const drive = await getDriveService();
-    const blogsFolderId = process.env.BLOG_FOLDER_ID;
+    const blogsFolderId = process.env.BLOGS_FOLDER_ID;
+    const thumbnailFolderId = process.env.THUMBNAILS_FOLDER_ID;
+
+    console.log("DEBUG: Blogs Folder ID:", blogsFolderId); // Log the blog folder ID
+    console.log("DEBUG: Thumbnail Folder ID:", thumbnailFolderId); // Log the thumbnail folder ID
 
     if (!blogsFolderId) {
       return NextResponse.json(
@@ -20,34 +27,84 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       );
     }
+    if (!thumbnailFolderId) {
+      return NextResponse.json(
+        { message: "Thumbnail folder ID not configured." },
+        { status: 500 }
+      );
+    }
 
-    // List files in the blogs folder, filtering by likely Markdown mimeTypes
-    // Request id, name, mimeType, and modifiedTime
-    const response = await drive.files.list({
+    // --- STEP 1: List files in the Blogs folder (metadata) ---
+    console.log(`DEBUG: Listing files in blogs folder ${blogsFolderId}...`); // Log before listing
+    const blogsListResponse = await drive.files.list({
       q: `'${blogsFolderId}' in parents and (mimeType='text/markdown' or mimeType='text/plain')`,
-      fields: "files(id, name, mimeType, modifiedTime)", // Request modifiedTime
+      fields: "files(id, name, mimeType, modifiedTime, description)", // Request metadata
       orderBy: "modifiedTime desc", // Optional: Order by modification time descending
+      pageSize: 1000,
     });
 
-    const files = (response.data.files as DriveFile[] | undefined) || [];
+    const blogFilesMetadata =
+      (blogsListResponse.data.files as DriveFile[] | undefined) || [];
+    console.log(
+      "DEBUG: Raw Blog Files Metadata from Drive:",
+      blogFilesMetadata
+    ); // Log raw results
 
-    // Refine filtering for .md extension if mimeType is text/plain
-    const mdFiles: BlogListItem[] = files
-      .filter(
-        (file) =>
-          file.mimeType === "text/markdown" ||
-          (file.mimeType === "text/plain" && file.name.endsWith(".md"))
-      )
-      .map((file) => ({
-        // Map to the BlogListItem type
-        id: file.id,
-        name: file.name,
-        modifiedTime: file.modifiedTime,
-      }));
+    // Filter for .md extension if mimeType is text/plain
+    const mdBlogFiles = blogFilesMetadata.filter(
+      (file) =>
+        file.mimeType === "text/markdown" ||
+        (file.mimeType === "text/plain" && file.name.endsWith(".md"))
+    );
+    console.log("DEBUG: Filtered Markdown Blog Files:", mdBlogFiles); // Log after filtering
 
-    return NextResponse.json(mdFiles);
+    // --- STEP 2: List files in the Thumbnails folder (metadata) ---
+    console.log(
+      `DEBUG: Listing files in thumbnail folder ${thumbnailFolderId}...`
+    ); // Log before listing
+    const thumbnailsListResponse = await drive.files.list({
+      q: `'${thumbnailFolderId}' in parents`, // List all files in the thumbnail folder
+      fields: "files(id, name, webViewLink)", // Request name and webViewLink
+      pageSize: 1000,
+    });
+
+    const thumbnailFiles =
+      (thumbnailsListResponse.data.files as DriveFile[] | undefined) || [];
+    console.log(
+      "DEBUG: Raw Thumbnail Files Metadata from Drive:",
+      thumbnailFiles
+    ); // Log raw results
+
+    // --- STEP 3: Create a map of thumbnail files by name for easy lookup ---
+    const thumbnailMap = new Map<string, string>(); // Map: thumbnail_name_without_ext -> webViewLink
+    thumbnailFiles.forEach((thumbFile) => {
+      const nameWithoutExt = thumbFile.name.replace(/\.[^/.]+$/, ""); // Remove extension
+      if (thumbFile.webViewLink) {
+        thumbnailMap.set(nameWithoutExt, thumbFile.webViewLink);
+      }
+    });
+    console.log("DEBUG: Thumbnail Map:", thumbnailMap); // Log the thumbnail map
+
+    // --- STEP 4: Combine blog data with matching thumbnail URLs ---
+    const blogListItems: BlogListItem[] = mdBlogFiles.map((blogFile) => {
+      const blogNameWithoutExt = blogFile.name.replace(/\.md$/, "");
+
+      const thumbnailUrl = thumbnailMap.get(blogNameWithoutExt);
+
+      return {
+        id: blogFile.id,
+        name: blogFile.name,
+        modifiedTime: blogFile.modifiedTime,
+        description: blogFile.description,
+        thumbnailUrl: thumbnailUrl,
+      };
+    });
+
+    console.log("DEBUG: Final Blog List Items:", blogListItems); // Log the final result
+
+    return NextResponse.json(blogListItems);
   } catch (error: any) {
-    console.error("Error listing blog files:", error);
+    console.error("Error listing blogs with thumbnails:", error);
     let status = 500;
     let message = "Failed to list blog files.";
 
