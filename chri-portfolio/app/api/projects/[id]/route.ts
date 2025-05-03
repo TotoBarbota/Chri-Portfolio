@@ -8,7 +8,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const fileId = await params.id;
+  const { id: fileId } = await params;
   console.log("GET request for file ID: " + fileId);
 
   if (!fileId) {

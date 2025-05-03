@@ -48,7 +48,7 @@ export function useContentProjects() {
   return { projects, loading, error };
 }
 
-export async function useProject(fileId: string) {
+export function useProject(fileId: string) {
   const [project, setProject] = useState<DriveFile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

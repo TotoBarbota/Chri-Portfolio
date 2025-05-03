@@ -20,7 +20,8 @@ export const ContentView = ({ id, type }: ContentViewProps) => {
 
     const fetchContent = async () => {
       try {
-        const apiUrl = type === "markdown" ? `/api/blogs/${id}` : `/api/projects/${id}`;
+        const apiUrl =
+          type === "markdown" ? `/api/blogs/${id}` : `/api/projects/${id}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
@@ -32,6 +33,7 @@ export const ContentView = ({ id, type }: ContentViewProps) => {
           setContent(data.content);
         } else {
           setPdfUrl(data.url);
+          console.log("Setting PDF URL:", data.url);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");

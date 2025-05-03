@@ -4,15 +4,19 @@ import { useParams } from "next/navigation";
 import { useContentProjects, useProject } from "@/lib/use-content";
 import { ContentView } from "@/components/content-viewer";
 
-export default async function ProjectPage() {
+export default function ProjectPage() {
   const { id } = useParams();
+  console.log("Project ID from URL:", id);
 
   if (!id) {
     return <div className="text-center py-8">Project ID not found</div>;
   }
 
-  const { project, error, loading } = await useProject(id as string);
-  console.log("Project Page: ", project);
+  const { project, error, loading } = useProject(id as string);
+  console.log("Project Page: ", id);
+  console.log("Project data:", project);
+  console.log("Loading state:", loading);
+  console.log("Error:", error);
 
   if (loading) {
     return <div className="text-center py-8">Loading...</div>;
