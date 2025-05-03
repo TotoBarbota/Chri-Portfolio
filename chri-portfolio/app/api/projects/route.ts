@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     ); // Log before listing
     const thumbnailsListResponse = await drive.files.list({
       q: `'${projectsThumbnailFolderId}' in parents`, // List all files in the projects thumbnail folder
-      fields: "files(id, name, webViewLink)", // Request name and webViewLink
+      fields: "files(id, name)", // Request id and name (we'll construct the URL)
       pageSize: 1000, // Increase page size if you have many thumbnails
     });
 
@@ -82,15 +82,13 @@ export async function GET(request: NextRequest) {
     ); // Log raw results
 
     // --- STEP 3: Create a map of thumbnail files by name for easy lookup ---
-    // Remove file extension from thumbnail names for matching
-    const thumbnailMap = new Map<string, string>(); // Map: thumbnail_name_without_ext -> webViewLink
+    // Map: thumbnail_name_without_ext -> direct_image_url
+    const thumbnailMap = new Map<string, string>();
     thumbnailFiles.forEach((thumbFile) => {
       const nameWithoutExt = thumbFile.name.replace(/\.[^/.]+$/, ""); // Remove extension
-      if (thumbFile.webViewLink) {
-        // Note: webViewLink requires the file to be publicly accessible OR
-        // accessible by the user's browser session. Share the thumbnail folder publicly.
-        thumbnailMap.set(nameWithoutExt, thumbFile.webViewLink);
-      }
+      // *** CHANGE: Construct the direct view URL using the file ID ***
+      const directImageUrl = `https://drive.google.com/uc?export=view&id=${thumbFile.id}`;
+      thumbnailMap.set(nameWithoutExt, directImageUrl);
     });
     console.log("DEBUG: Projects Thumbnail Map:", thumbnailMap); // Log the thumbnail map
 

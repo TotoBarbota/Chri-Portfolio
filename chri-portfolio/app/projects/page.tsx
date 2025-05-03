@@ -1,5 +1,5 @@
-// app/blogs/page.tsx (Assuming App Router)
-// If using Pages Router: pages/blogs.tsx
+// app/projects/page.tsx (Assuming App Router)
+// If using Pages Router: pages/projects.tsx
 
 "use client"; // Client Component
 
@@ -8,19 +8,19 @@ import Link from "next/link";
 import Image from "next/image"; // Import Image component for optimized images
 import { Fade, FadeGroup } from "@/components/motion";
 import { ViewMode, ViewToggle } from "@/components/view-toggle";
+import { Badge, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowRight, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 // Define the type for the data fetched from the list API
-// ADDED description and thumbnailUrl
-interface BlogListItem {
+interface ProjectListItem {
   id: string;
   name: string;
   modifiedTime?: string;
@@ -28,49 +28,47 @@ interface BlogListItem {
   thumbnailUrl?: string; // Include thumbnailUrl
 }
 
-const BlogsPage: FC = () => {
-  const [blogs, setBlogs] = useState<BlogListItem[]>([]);
+const ProjectsPage: FC = () => {
+  const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("card-small");
 
   useEffect(() => {
-    async function fetchBlogs() {
+    async function fetchProjects() {
       try {
-        const res = await fetch("/api/blogs");
+        const res = await fetch("/api/projects");
         if (!res.ok) {
           const errorData = await res.json().catch(() => null);
           const errorMessage =
-            errorData?.message || `Error fetching blogs: ${res.status}`;
+            errorData?.message || `Error fetching projects: ${res.status}`;
           throw new Error(errorMessage);
         }
-        const data: BlogListItem[] = await res.json();
-        data.map((post) => (post.name = post.name.replace(/\.md$/, "")));
-        setBlogs(data);
-        console.log(data);
+        const data: ProjectListItem[] = await res.json(); // Type the fetched data
+        data.map((post) => (post.name = post.name.replace(/\.pdf$/, "")));
+        setProjects(data);
       } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-    fetchBlogs();
-  }, []); // Empty dependency array means this runs once on mount
+    fetchProjects();
+  }, []);
 
-  if (loading) return <div>Loading blogs...</div>;
+  if (loading) return <div>Loading projects...</div>;
   if (error) return <div>Error: {error}</div>;
-  if (blogs.length === 0) return <div>No blog posts found.</div>;
+  if (projects.length === 0) return <div>No projects found.</div>;
 
   return (
     <div className="py-12">
-      {/* Update the heading and description */}
       <Fade direction="up" className="max-w-3xl mx-auto mb-12 text-center">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-          Insights
+          My Projects
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Thoughts and perspectives on business strategy, leadership, and
-          innovation.
+          A showcase of strategic initiatives and business transformations I've
+          led.
         </p>
       </Fade>
 
@@ -78,39 +76,41 @@ const BlogsPage: FC = () => {
         <ViewToggle
           onChange={setViewMode}
           defaultValue="card-small"
-          storageKey="blog-view-mode"
+          storageKey="portfolio-view-mode"
         />
       </div>
 
       {viewMode === "list" ? (
         <FadeGroup className="space-y-6" staggerDelay={0.15}>
-          {blogs.map((post) => (
-            <Fade key={post.id}>
+          {projects.map((project) => (
+            <Fade key={project.id}>
               <div className="flex flex-col md:flex-row gap-6 border rounded-lg p-4 hover:shadow-md transition-all hover:border-primary/50">
                 <div className="md:w-1/3 h-48 relative rounded-md overflow-hidden">
                   <Image
-                    src={post.thumbnailUrl || "/placeholder.svg"}
-                    alt={post.name}
+                    src={project.thumbnailUrl || "/placeholder.svg"}
+                    alt={project.name}
                     fill
                     className="object-cover transition-transform duration-500 hover:scale-105"
                   />
                 </div>
                 <div className="md:w-2/3 flex flex-col">
-                  <div className="flex items-center text-sm text-muted-foreground mb-2">
-                    <Calendar className="mr-1 h-4 w-4" />
-                    {post.modifiedTime
-                      ? new Date(post.modifiedTime).toISOString().split("T")[0]
-                      : ""}
-                  </div>
-                  <h2 className="text-2xl font-bold">{post.name}</h2>
+                  <h2 className="text-2xl font-bold">{project.name}</h2>
                   <p className="text-muted-foreground mt-2 mb-4">
-                    {post.description}
+                    {project.description}
                   </p>
-                  <div className="mt-auto">
-                    <Button asChild className="group">
-                      <Link href={`/blog/${post.id}`}>
+                  <div className="mt-auto flex gap-4">
+                    <Button
+                      asChild
+                      size="sm"
+                      className="transition-all hover:bg-primary/90"
+                    >
+                      <Link
+                        href={`/projects/${project.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
                         Read More
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Link>
                     </Button>
                   </div>
@@ -128,8 +128,8 @@ const BlogsPage: FC = () => {
           }`}
           staggerDelay={0.15}
         >
-          {blogs.map((post) => (
-            <Fade key={post.id}>
+          {projects.map((project) => (
+            <Fade key={project.id}>
               <Card className="overflow-hidden flex flex-col hover-scale">
                 <div
                   className={`relative w-full overflow-hidden ${
@@ -137,27 +137,29 @@ const BlogsPage: FC = () => {
                   }`}
                 >
                   <Image
-                    src={post.thumbnailUrl || "/placeholder.svg"}
-                    alt={post.name}
+                    src={project.thumbnailUrl || "/placeholder.svg"}
+                    alt={project.name}
                     fill
                     className="object-cover transition-transform duration-500 hover:scale-110"
                   />
                 </div>
                 <CardHeader>
-                  <div className="flex items-center text-sm text-muted-foreground mb-2">
-                    <Calendar className="mr-1 h-4 w-4" />
-                    {post.modifiedTime
-                      ? new Date(post.modifiedTime).toISOString().split("T")[0]
-                      : ""}
-                  </div>
-                  <CardTitle>{post.name}</CardTitle>
-                  <CardDescription>{post.description}</CardDescription>
+                  <CardTitle>{project.name}</CardTitle>
+                  <CardDescription>{project.description}</CardDescription>
                 </CardHeader>
-                <CardFooter>
-                  <Button asChild className="w-full group">
-                    <Link href={`/blogs/${post.id}`}>
+                <CardFooter className="flex justify-between">
+                  <Button
+                    asChild
+                    size="sm"
+                    className="transition-all hover:bg-primary/90"
+                  >
+                    <Link
+                      href={`/projects/${project.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
                       Read More
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>
                 </CardFooter>
@@ -170,4 +172,4 @@ const BlogsPage: FC = () => {
   );
 };
 
-export default BlogsPage;
+export default ProjectsPage;
