@@ -179,13 +179,7 @@ export default function PortfolioPage() {
                     size="sm"
                     className="transition-all hover:bg-secondary/80"
                   >
-                    <Link
-                      href={`/portfolio/${project.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Details
-                    </Link>
+                    <Link href={`/portfolio/${project.id}`}>Details</Link>
                   </Button>
                 </CardFooter>
               </Card>

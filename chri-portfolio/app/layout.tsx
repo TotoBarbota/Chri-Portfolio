@@ -41,11 +41,11 @@ export default function RootLayout({
                 <p>
                   © {new Date().getFullYear()} Your Name. All rights reserved.
                 </p>
-                <div className="flex items-center gap-4">
+                {/* <div className="flex items-center gap-4">
                   <Link href="https://twitter.com">Twitter</Link>
                   <Link href="https://github.com">GitHub</Link>
                   <Link href="https://linkedin.com">LinkedIn</Link>
-                </div>
+                </div> */}
               </div>
             </footer>
           </div>
