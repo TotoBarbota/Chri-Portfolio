@@ -14,7 +14,7 @@ type ProjectListItem = Pick<
   thumbnailUrl?: string; // Add thumbnailUrl field
 };
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const drive = await getDriveService();
     const projectsFolderId = process.env.PROJECTS_FOLDER_ID;

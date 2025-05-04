@@ -12,7 +12,7 @@ type BlogListItem = Pick<
   thumbnailUrl?: string; // Add thumbnailUrl field
 };
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const drive = await getDriveService();
     const blogsFolderId = process.env.BLOGS_FOLDER_ID;

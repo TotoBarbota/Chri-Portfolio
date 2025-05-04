@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
+import Error from "next/error";
 // app/portfolio/[id]/page.tsx
 import { useParams } from "next/navigation"; // Use useParams from next/navigation for App Router
 import { useEffect, useState, FC, useRef } from "react"; // Added useRef
@@ -12,9 +13,23 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 // Make sure this points to your locally served worker file (e.g., /workers/pdf.worker.mjs)
 pdfjs.GlobalWorkerOptions.workerSrc = "/workers/pdf.worker.mjs"; // Update with your exact path
 
-// Define type for react-pdf load success event
-interface DocumentLoadSuccess {
+// Define types for PDF document and page
+interface PDFDocument {
   numPages: number;
+  getPage: (pageNumber: number) => Promise<PDFPage>;
+}
+
+interface PDFPage {
+  getViewport: (options: { scale: number }) => {
+    width: number;
+    height: number;
+  };
+}
+
+// Define custom error type
+interface FetchError extends Error {
+  message: string;
+  status?: number;
 }
 
 const ProjectDetailPage: FC = () => {
@@ -34,7 +49,6 @@ const ProjectDetailPage: FC = () => {
     all: 0.5,
   }); // Default scales
   const [pageInput, setPageInput] = useState<string>("1"); // *** Added state for page jump input ***
-  const [pdfDocument, setPdfDocument] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"single" | "all">("single"); // Add view mode state
 
   const containerRef = useRef<HTMLDivElement>(null); // Ref to get container width for initial scale
@@ -61,9 +75,11 @@ const ProjectDetailPage: FC = () => {
         const url = URL.createObjectURL(blob);
 
         setPdfUrl(url);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error fetching PDF:", err);
-        setError(err.message);
+        setError(
+          err instanceof Error ? err.message : "An unexpected error occurred"
+        );
       } finally {
         setLoading(false);
       }
@@ -79,13 +95,11 @@ const ProjectDetailPage: FC = () => {
         setPageNumber(1);
         setScale(1.0); // Reset scale too
         setPageInput("1"); // Reset input too
-        setPdfDocument(null);
       }
     };
   }, [fileId]);
 
-  const handleDocumentLoadSuccess = (pdfDocument: any) => {
-    setPdfDocument(pdfDocument);
+  const handleDocumentLoadSuccess = (pdfDocument: PDFDocument) => {
     setNumPages(pdfDocument.numPages);
     setPageNumber(1);
     setPageInput("1"); // Reset page input
@@ -101,7 +115,7 @@ const ProjectDetailPage: FC = () => {
       const containerWidth = containerRef.current.getBoundingClientRect().width;
 
       // Get the first page
-      pdfDocument.getPage(1).then((page: any) => {
+      pdfDocument.getPage(1).then((page: PDFPage) => {
         const viewport = page.getViewport({ scale: 1.0 });
         const pageWidth = viewport.width;
 

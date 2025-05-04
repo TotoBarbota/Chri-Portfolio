@@ -14,9 +14,9 @@ interface BlogContentResponse {
 }
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> {
   const fileId = params.id;
   console.log("GET request for blog file ID:", fileId);
 

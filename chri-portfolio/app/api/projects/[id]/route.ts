@@ -2,7 +2,6 @@
 // If using Pages Router: pages/api/projects/[id].ts (adjust imports & handler export)
 import { NextRequest, NextResponse } from "next/server";
 import { getDriveService } from "@/lib/google-drive"; // Adjust path as needed
-import { drive_v3 } from "googleapis";
 import { Readable } from "stream";
 
 // Use the GET function for App Router API routes

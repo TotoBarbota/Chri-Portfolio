@@ -1,5 +1,4 @@
 import { BlogPost } from "@/lib/types";
-import { parseMarkdown } from "@/lib/markdown-parser";
 import { ContentView } from "./content-viewer";
 
 interface BlogPostProps {

@@ -4,7 +4,7 @@
 "use client"; // This is a Client Component
 
 import { useParams } from "next/navigation";
-import { useEffect, useState, FC } from "react";
+import { useEffect, useState } from "react";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm"; // Optional: Add support for GitHub Flavored Markdown (tables, task lists etc.)
@@ -28,12 +28,6 @@ interface BlogContentData {
 // This could be a path in your public folder, or a URL to a public Google Drive folder
 // Example using a public folder:
 const BLOG_IMAGES_BASE_URL = "/blog-images/"; // Assuming images are in public/blog-images/
-
-// Example using a public Google Drive folder (more complex, requires knowing file IDs or using names)
-// For Google Drive, you'd likely need another API call to map names to IDs or use the thumbnail folder approach
-// If using a public Google Drive folder and matching by name, you'd need a map similar to the thumbnail logic
-// For simplicity, we'll demonstrate with a base URL assumption.
-// If your images are also in the SAME thumbnail folder, you could reuse that logic here.
 
 // *** Custom component to render text nodes and handle [[image.png]] syntax ***
 interface TextNode {
@@ -81,7 +75,7 @@ const CustomTextNode: React.FC<{
   return <>{children}</>;
 };
 
-const BlogDetailPage: React.FC = () => {
+const BlogDetailPage = () => {
   const params = useParams();
   const id = params.id as string | string[];
   const fileId = Array.isArray(id) ? id[0] : id;
@@ -93,8 +87,6 @@ const BlogDetailPage: React.FC = () => {
   // State for blog metadata
   const [blogTitle, setBlogTitle] = useState<string>("Loading Blog Post...");
   const [blogDate, setBlogDate] = useState<string | null>(null);
-  const [blogTags, setBlogTags] = useState<string[]>([]);
-  const [blogThumbnail, setBlogThumbnail] = useState<string | null>(null);
 
   useEffect(() => {
     if (!fileId) {
@@ -129,8 +121,6 @@ const BlogDetailPage: React.FC = () => {
             ? new Date(frontmatter.date).toLocaleDateString()
             : null
         );
-        setBlogTags(frontmatter.tags || []);
-        setBlogThumbnail(frontmatter.thumbnail || null);
       } catch (err: unknown) {
         const errorMessage =
           err instanceof Error ? err.message : "An unexpected error occurred";
@@ -152,17 +142,6 @@ const BlogDetailPage: React.FC = () => {
     <div className="max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-4">{blogTitle}</h1>
       {blogDate && <p className="text-muted-foreground mb-4">{blogDate}</p>}
-      {blogThumbnail && (
-        <div className="mb-8">
-          <Image
-            src={blogThumbnail}
-            alt={blogTitle}
-            width={800}
-            height={400}
-            className="rounded-lg"
-          />
-        </div>
-      )}
       <div className="prose max-w-none">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
