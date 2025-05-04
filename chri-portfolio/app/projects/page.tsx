@@ -8,7 +8,7 @@ import Link from "next/link";
 import Image from "next/image"; // Import Image component for optimized images
 import { Fade, FadeGroup } from "@/components/motion";
 import { ViewMode, ViewToggle } from "@/components/view-toggle";
-import { Badge, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -40,19 +40,27 @@ const ProjectsPage: FC = () => {
         const res = await fetch("/api/projects");
         if (!res.ok) {
           const errorData = await res.json().catch(() => null);
-          const errorMessage =
-            errorData?.message || `Error fetching projects: ${res.status}`;
+          const errorMessage = errorData?.message || `Failed to fetch projects (Status: ${res.status})`;
           throw new Error(errorMessage);
         }
-        const data: ProjectListItem[] = await res.json(); // Type the fetched data
-        data.map((post) => (post.name = post.name.replace(/\.pdf$/, "")));
-        setProjects(data);
-      } catch (err: any) {
-        setError(err.message);
+        const data = await res.json();
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid response format: expected array");
+        }
+        const updatedData = data.map((post: ProjectListItem) => ({
+          ...post,
+          name: post.name.replace(/\.pdf$/, ""),
+        }));
+        setProjects(updatedData);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+        setError(errorMessage);
+        console.error("Error fetching projects:", err);
       } finally {
         setLoading(false);
       }
     }
+
     fetchProjects();
   }, []);
 
@@ -67,7 +75,7 @@ const ProjectsPage: FC = () => {
           My Projects
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          A showcase of strategic initiatives and business transformations I've
+          A showcase of strategic initiatives and business transformations I&apos;ve
           led.
         </p>
       </Fade>

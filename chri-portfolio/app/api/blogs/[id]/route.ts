@@ -2,13 +2,14 @@
 // If using Pages Router: pages/api/blogs/[id].ts (adjust imports and export default handler)
 
 import { NextRequest, NextResponse } from "next/server";
-import { getDriveService } from "@/lib/google-drive"; // Adjust path as needed
-import matter from "gray-matter"; // Import gray-matter
+import { getDriveService } from "@/lib/google-drive";
+import matter from "gray-matter";
+import { Buffer } from "buffer";
 
 // Define the expected structure for the blog content response
 interface BlogContentResponse {
   content: string; // The Markdown content after frontmatter
-  frontmatter?: any; // The parsed frontmatter data (adjust type if you know its structure)
+  frontmatter?: Record<string, unknown>; // The parsed frontmatter data
   message?: string; // For error messages
 }
 
@@ -38,15 +39,14 @@ export async function GET(
       {
         fileId: fileId,
         alt: "media", // Get the file content bytes
-      },
-      {
-        // No responseType: 'stream' needed if you expect text,
-        // the default is to return a buffer or string depending on the library version/config.
       }
     );
 
-    // response.data for text files is typically a Buffer
-    const markdownBuffer = response.data as Buffer;
+    // Convert the response to a Buffer
+    const markdownBuffer = Buffer.from(response.data as string);
+    if (!Buffer.isBuffer(markdownBuffer)) {
+      throw new Error("Failed to convert response to Buffer");
+    }
     const markdownContentRaw = markdownBuffer.toString("utf8"); // Assuming UTF-8 encoding
 
     // *** Use gray-matter to parse frontmatter and content ***
@@ -57,25 +57,42 @@ export async function GET(
       content: content,
       frontmatter: frontmatter,
     } as BlogContentResponse); // Cast to the defined type
-  } catch (error: any) {
-    console.error(`Error fetching blog file ${fileId}:`, error);
+  } catch (error: unknown) {
+    const isApiError = (e: unknown): e is { response: { status: number; data: { message?: string } } } =>
+      typeof e === 'object' &&
+      e !== null &&
+      'response' in e &&
+      typeof e.response === 'object' &&
+      e.response !== null &&
+      'status' in e.response &&
+      'data' in e.response;
 
-    let status = 500;
-    let message = "Failed to fetch blog file.";
+    const hasErrors = (e: unknown): e is { errors: Array<{ reason: string }> } =>
+      typeof e === 'object' &&
+      e !== null &&
+      'errors' in e &&
+      Array.isArray(e.errors) &&
+      e.errors.length > 0 &&
+      'reason' in e.errors[0];
 
-    if (error.response?.status) {
-      status = error.response.status;
-      if (status === 404) message = "Blog file not found.";
-      else if (status === 403) message = "Access denied by Google Drive.";
-    } else if (
-      error.errors &&
-      error.errors[0] &&
-      error.errors[0].reason === "forbidden"
-    ) {
-      status = 403;
-      message = "Access denied by Google Drive.";
+    if (isApiError(error)) {
+      const status = error.response.status;
+      let message = "Failed to fetch blog file.";
+      
+      if (status === 404) {
+        message = "Blog file not found.";
+      } else if (status === 403) {
+        message = "Access denied by Google Drive.";
+      } else if (error.response.data?.message) {
+        message = error.response.data.message;
+      }
+      
+      return NextResponse.json({ message }, { status });
+    } else if (hasErrors(error) && error.errors[0].reason === "forbidden") {
+      return NextResponse.json({ message: "Access denied by Google Drive." }, { status: 403 });
+    } else {
+      console.error(`Error fetching blog file ${fileId}:`, error);
+      return NextResponse.json({ message: "An unexpected error occurred" }, { status: 500 });
     }
-
-    return NextResponse.json({ message: message }, { status: status });
   }
 }

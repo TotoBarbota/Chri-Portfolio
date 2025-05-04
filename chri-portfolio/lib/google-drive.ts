@@ -44,17 +44,17 @@ export const getDriveService = async (): Promise<drive_v3.Drive> => {
   if (!credentials) {
     throw new Error(
       "Google Service Account credentials are not loaded or invalid."
-    );
+    ) as Error;
   }
   try {
     const drive = google.drive({ version: "v3", auth: auth });
     return drive;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(
       "Error getting Google Drive service with Service Account:",
       error
     );
-    throw new Error("Failed to initialize Google Drive service.");
+    throw new Error("Failed to initialize Google Drive service.") as Error;
   }
 };
 

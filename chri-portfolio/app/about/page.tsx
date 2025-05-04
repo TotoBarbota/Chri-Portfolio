@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Button } from "@/components/ui/button";
 import { Download, Mail } from "lucide-react";
 import Link from "next/link";
 import { Fade } from "@/components/motion";
+import { Badge } from "@/components/ui/badge";
 
 export default function AboutPage() {
   // Replace with your actual skills
@@ -66,21 +67,21 @@ export default function AboutPage() {
                   <h2 className="text-2xl font-bold mb-4">About Me</h2>
                   <div className="space-y-4 text-muted-foreground">
                     <p>
-                      Hello! I'm a passionate business strategist with a keen
-                      eye for opportunities and a talent for driving growth and
-                      innovation.
+                      Hello! I&apos;m a passionate business strategist with a
+                      keen eye for opportunities and a talent for driving growth
+                      and innovation.
                     </p>
                     <p>
                       With several years of experience in business development
                       and strategic planning, I specialize in identifying market
                       opportunities and developing actionable plans to
-                      capitalize on them. I'm dedicated to creating sustainable
-                      growth and delivering exceptional results.
+                      capitalize on them. I&apos;m dedicated to creating
+                      sustainable growth and delivering exceptional results.
                     </p>
                     <p>
-                      When I'm not working on business strategies, you can find
-                      me mentoring aspiring entrepreneurs, speaking at industry
-                      events, or exploring new market trends.
+                      When I&apos;m not working on business strategies, you can
+                      find me mentoring aspiring entrepreneurs, speaking at
+                      industry events, or exploring new market trends.
                     </p>
                   </div>
                 </CardContent>

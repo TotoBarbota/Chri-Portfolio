@@ -39,13 +39,19 @@ export function Fade({
     return <Component className={className}>{children}</Component>
   }
 
-  let animationClass = "animate-fade-in"
-  if (direction === "up") animationClass = "animate-slide-up"
-  if (direction === "down") animationClass = "animate-slide-down"
-  if (direction === "left") animationClass = "animate-slide-left"
-  if (direction === "right") animationClass = "animate-slide-right"
+  const getAnimationClass = (dir: FadeProps['direction']): string => {
+    switch (dir) {
+      case 'up': return 'animate-slide-up';
+      case 'down': return 'animate-slide-down';
+      case 'left': return 'animate-slide-left';
+      case 'right': return 'animate-slide-right';
+      default: return 'animate-fade-in';
+    }
+  };
 
-  const style = {
+  const animationClass = getAnimationClass(direction);
+
+  const style: React.CSSProperties = {
     opacity: isVisible ? 1 : 0,
     transform: isVisible ? "none" : getInitialTransform(direction),
     transition: `opacity ${duration}s ease-out, transform ${duration}s ease-out`,
@@ -79,10 +85,13 @@ export function FadeGroup({
   className,
   staggerDelay = 0.1,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode[]
   className?: string
   staggerDelay?: number
 }) {
+  if (!Array.isArray(children)) {
+    return <Fade {...{ children, className }} />;
+  }
   const prefersReducedMotion = useReducedMotion()
 
   if (prefersReducedMotion) {
@@ -91,13 +100,13 @@ export function FadeGroup({
 
   return (
     <div className={className}>
-      {React.Children.map(children, (child, index) => {
-        if (!React.isValidElement(child)) return child
-
-        return React.cloneElement(child as React.ReactElement, {
-          delay: index * staggerDelay,
-        })
-      })}
+      {children.map((child, index) => (
+        <Fade
+          {...{ children: child, className }}
+          delay={index * staggerDelay}
+          key={index}
+        />
+      ))}
     </div>
   )
 }
