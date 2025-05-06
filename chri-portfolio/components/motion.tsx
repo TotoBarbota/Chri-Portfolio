@@ -75,10 +75,11 @@ export function FadeGroup({
   className?: string;
   staggerDelay?: number;
 }) {
+  const prefersReducedMotion = useReducedMotion();
+
   if (!Array.isArray(children)) {
     return <Fade {...{ children, className }} />;
   }
-  const prefersReducedMotion = useReducedMotion();
 
   if (prefersReducedMotion) {
     return <div className={className}>{children}</div>;

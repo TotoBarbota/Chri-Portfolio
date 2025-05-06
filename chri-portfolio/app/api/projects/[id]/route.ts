@@ -1,16 +1,25 @@
 // app/api/projects/[id]/route.ts (Assuming App Router: app/api/projects/[id]/route.ts)
 // If using Pages Router: pages/api/projects/[id].ts (adjust imports & handler export)
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getDriveService } from "@/lib/google-drive"; // Adjust path as needed
 import { Readable } from "stream";
 
 // Use the GET function for App Router API routes
-export async function GET({ params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+): Promise<NextResponse> {
+  // Get the ID from the URL parameters
   const fileId = params.id;
 
-  if (!fileId) {
+  // Fallback to search params if params.id is not available
+  const searchParams = request.nextUrl.searchParams;
+  const idFromParams = searchParams.get("id");
+  const finalId = fileId || idFromParams;
+
+  if (!finalId) {
     return NextResponse.json(
-      { message: "File ID is required" },
+      { message: "Project ID is required" },
       { status: 400 }
     );
   }
@@ -21,7 +30,7 @@ export async function GET({ params }: { params: { id: string } }) {
     // *** KEY CHANGE: Use alt: 'media' to get the file content stream ***
     const response = await drive.files.get(
       {
-        fileId: fileId,
+        fileId: finalId,
         alt: "media" as const, // Get the file content bytes
       },
       {

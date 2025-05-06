@@ -86,7 +86,7 @@ export async function GET() {
     });
 
     return NextResponse.json(blogListItems);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error listing blogs with thumbnails:", error);
     let status = 500;
     let message = "Failed to list blog files.";
