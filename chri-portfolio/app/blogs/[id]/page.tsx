@@ -85,6 +85,8 @@ const BlogDetailPage = () => {
   const [blogData, setBlogData] = useState<BlogContentData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // State for blog metadata
   const [blogTitle, setBlogTitle] = useState<string>("Loading Blog Post...");
@@ -139,9 +141,6 @@ const BlogDetailPage = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!blogData) return <div>No blog data found</div>;
-
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -200,7 +199,7 @@ const BlogDetailPage = () => {
                   )}
                 </div>
               ),
-              code: ({ node, inline, className, children, ...props }) => {
+              code: ({ inline, className, children, ...props }) => {
                 const match = /language-(\w+)/.exec(className || "");
                 return !inline && match ? (
                   <div className="relative">
@@ -231,12 +230,12 @@ const BlogDetailPage = () => {
                   </code>
                 );
               },
-              table: ({ node, ...props }) => (
+              table: ({ ...props }) => (
                 <div className="overflow-x-auto my-6">
                   <table className="min-w-full border-collapse" {...props} />
                 </div>
               ),
-              th: ({ node, ...props }) => (
+              th: ({ ...props }) => (
                 <th
                   className={cn(
                     "border border-border px-4 py-2 text-left",
@@ -246,7 +245,7 @@ const BlogDetailPage = () => {
                   {...props}
                 />
               ),
-              td: ({ node, ...props }) => (
+              td: ({ ...props }) => (
                 <td className="border border-border px-4 py-2" {...props} />
               ),
             }}

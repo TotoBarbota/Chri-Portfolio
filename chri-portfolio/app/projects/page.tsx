@@ -66,7 +66,7 @@ export default function ProjectsPage({ searchParams }: ProjectsPageProps) {
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
             A showcase of strategic initiatives and business transformations
-            I've led.
+            I&apos;ve led.
           </p>
         </Fade>
 

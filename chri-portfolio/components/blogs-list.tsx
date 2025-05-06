@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Fade, FadeGroup } from "@/components/motion";
 import { ViewMode, ViewToggle } from "@/components/view-toggle";
-import { ArrowRight, Calendar, ExternalLink } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,

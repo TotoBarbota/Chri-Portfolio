@@ -57,8 +57,8 @@ export default function Page() {
             My Blog
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Thoughts, insights, and updates on various topics I'm passionate
-            about.
+            Thoughts, insights, and updates on various topics I&apos;m
+            passionate about.
           </p>
         </Fade>
 

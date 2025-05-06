@@ -1,5 +1,4 @@
 // compoments/pdf-vierwer.tsx
-import { useState } from "react";
 
 interface PdfViewerProps {
   url: string;

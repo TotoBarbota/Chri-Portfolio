@@ -22,7 +22,7 @@ export async function GET({ params }: { params: { id: string } }) {
     const response = await drive.files.get(
       {
         fileId: fileId,
-        alt: "media", // Get the file content bytes
+        alt: "media" as const, // Get the file content bytes
       },
       {
         // Instruct googleapis to return a Node.js stream

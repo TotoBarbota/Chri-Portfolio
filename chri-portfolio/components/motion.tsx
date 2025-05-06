@@ -10,7 +10,6 @@ type FadeProps = {
   direction?: "up" | "down" | "left" | "right";
   delay?: number;
   duration?: number;
-  once?: boolean;
   as?: React.ElementType;
 };
 
@@ -20,7 +19,6 @@ export function Fade({
   direction,
   delay = 0,
   duration = 0.5,
-  once = true,
   as: Component = "div",
 }: FadeProps) {
   const prefersReducedMotion = useReducedMotion();
@@ -38,23 +36,6 @@ export function Fade({
   if (prefersReducedMotion) {
     return <Component className={className}>{children}</Component>;
   }
-
-  const getAnimationClass = (dir: FadeProps["direction"]): string => {
-    switch (dir) {
-      case "up":
-        return "animate-slide-up";
-      case "down":
-        return "animate-slide-down";
-      case "left":
-        return "animate-slide-left";
-      case "right":
-        return "animate-slide-right";
-      default:
-        return "animate-fade-in";
-    }
-  };
-
-  const animationClass = getAnimationClass(direction);
 
   const style: React.CSSProperties = {
     opacity: isVisible ? 1 : 0,

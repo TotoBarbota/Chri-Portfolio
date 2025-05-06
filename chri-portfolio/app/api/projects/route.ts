@@ -1,7 +1,7 @@
 // app/api/projects/route.ts (Assuming App Router)
 // If using Pages Router: pages/api/projects.ts (adjust imports and export default handler)
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getDriveService, DriveFile } from "@/lib/google-drive"; // Adjust path as needed
 
 // Define the expected structure for the project list response
@@ -90,7 +90,7 @@ export async function GET() {
     );
 
     return NextResponse.json(projectListItems);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error listing projects with thumbnails:", error);
     let status = 500;
     let message = "Failed to list project files.";

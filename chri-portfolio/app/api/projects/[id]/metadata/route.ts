@@ -19,7 +19,7 @@ export async function GET({ params }: { params: { id: string } }) {
       modifiedTime: response.data.modifiedTime,
       webViewLink: response.data.webViewLink,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in metadata endpoint:");
     console.error("Error message:", error.message);
     if (error.response) {
