@@ -23,7 +23,7 @@ export async function GET(request: Request, { params }: Params) {
       modifiedTime: response.data.modifiedTime,
       webViewLink: response.data.webViewLink,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in metadata endpoint:", error);
     return NextResponse.json(
       { error: "Failed to fetch project metadata" },

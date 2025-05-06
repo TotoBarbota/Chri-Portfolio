@@ -35,7 +35,7 @@ export async function GET(
       },
       {
         // Instruct googleapis to return a Node.js stream
-        responseType: "stream" as "stream",
+        responseType: "stream" as const,
       }
     );
 
@@ -62,7 +62,7 @@ export async function GET(
         // 'Content-Disposition': `inline; filename="${fileId}.pdf"`, // Optional: Suggest filename
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error fetching project file ${fileId}:`, error);
 
     let status = 500;
