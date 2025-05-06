@@ -14,33 +14,32 @@ interface BlogContentResponse {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
+  // Get the ID from the URL parameters
   const fileId = params.id;
-  console.log("GET request for blog file ID:", fileId);
 
-  if (!fileId) {
+  // Fallback to search params if params.id is not available
+  const searchParams = request.nextUrl.searchParams;
+  const idFromParams = searchParams.get("id");
+  const finalId = fileId || idFromParams;
+
+  if (!finalId) {
     return NextResponse.json(
-      { message: "File ID is required" },
+      { message: "Blog post ID is required" },
       { status: 400 }
     );
   }
 
   try {
-    console.log("Getting Drive service...");
     const drive = await getDriveService();
-    console.log("Drive service obtained");
-
-    console.log(`Fetching blog file content for ${fileId}...`);
 
     // Fetch the file content using alt: 'media'
-    const response = await drive.files.get(
-      {
-        fileId: fileId,
-        alt: "media", // Get the file content bytes
-      }
-    );
+    const response = await drive.files.get({
+      fileId: finalId,
+      alt: "media" as const, // Use const assertion for type safety
+    });
 
     // Convert the response to a Buffer
     const markdownBuffer = Buffer.from(response.data as string);
@@ -58,27 +57,31 @@ export async function GET(
       frontmatter: frontmatter,
     } as BlogContentResponse); // Cast to the defined type
   } catch (error: unknown) {
-    const isApiError = (e: unknown): e is { response: { status: number; data: { message?: string } } } =>
-      typeof e === 'object' &&
+    const isApiError = (
+      e: unknown
+    ): e is { response: { status: number; data: { message?: string } } } =>
+      typeof e === "object" &&
       e !== null &&
-      'response' in e &&
-      typeof e.response === 'object' &&
+      "response" in e &&
+      typeof e.response === "object" &&
       e.response !== null &&
-      'status' in e.response &&
-      'data' in e.response;
+      "status" in e.response &&
+      "data" in e.response;
 
-    const hasErrors = (e: unknown): e is { errors: Array<{ reason: string }> } =>
-      typeof e === 'object' &&
+    const hasErrors = (
+      e: unknown
+    ): e is { errors: Array<{ reason: string }> } =>
+      typeof e === "object" &&
       e !== null &&
-      'errors' in e &&
+      "errors" in e &&
       Array.isArray(e.errors) &&
       e.errors.length > 0 &&
-      'reason' in e.errors[0];
+      "reason" in e.errors[0];
 
     if (isApiError(error)) {
       const status = error.response.status;
       let message = "Failed to fetch blog file.";
-      
+
       if (status === 404) {
         message = "Blog file not found.";
       } else if (status === 403) {
@@ -86,13 +89,19 @@ export async function GET(
       } else if (error.response.data?.message) {
         message = error.response.data.message;
       }
-      
+
       return NextResponse.json({ message }, { status });
     } else if (hasErrors(error) && error.errors[0].reason === "forbidden") {
-      return NextResponse.json({ message: "Access denied by Google Drive." }, { status: 403 });
+      return NextResponse.json(
+        { message: "Access denied by Google Drive." },
+        { status: 403 }
+      );
     } else {
-      console.error(`Error fetching blog file ${fileId}:`, error);
-      return NextResponse.json({ message: "An unexpected error occurred" }, { status: 500 });
+      console.error(`Error fetching blog file ${finalId}:`, error);
+      return NextResponse.json(
+        { message: "An unexpected error occurred" },
+        { status: 500 }
+      );
     }
   }
 }

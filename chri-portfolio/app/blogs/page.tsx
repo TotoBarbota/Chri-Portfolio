@@ -1,173 +1,72 @@
-// app/blogs/page.tsx (Assuming App Router)
-// If using Pages Router: pages/blogs.tsx
+import { Suspense } from "react";
+import { BlogsList } from "@/components/blogs-list";
+import { ContentLoadingSkeleton } from "@/components/content-loading-skeleton";
+import { Fade } from "@/components/motion";
 
-"use client"; // Client Component
-
-import { useEffect, useState, FC } from "react";
-import Link from "next/link";
-import Image from "next/image"; // Import Image component for optimized images
-import { Fade, FadeGroup } from "@/components/motion";
-import { ViewMode, ViewToggle } from "@/components/view-toggle";
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ArrowRight, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-// Define the type for the data fetched from the list API
-// ADDED description and thumbnailUrl
 interface BlogListItem {
   id: string;
   name: string;
   modifiedTime?: string;
   description?: string;
-  thumbnailUrl?: string; // Include thumbnailUrl
+  thumbnailUrl?: string;
+  readTime?: string;
 }
 
-const BlogsPage: FC = () => {
-  const [blogs, setBlogs] = useState<BlogListItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("card-small");
+async function getBlogs(): Promise<BlogListItem[]> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const res = await fetch(`${baseUrl}/api/blogs`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
 
-  useEffect(() => {
-    async function fetchBlogs() {
-      try {
-        const res = await fetch("/api/blogs");
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => null);
-          const errorMessage =
-            errorData?.message || `Error fetching blogs: ${res.status}`;
-          throw new Error(errorMessage);
-        }
-        const data: BlogListItem[] = await res.json();
-        data.map((post) => (post.name = post.name.replace(/\.md$/, "")));
-        setBlogs(data);
-        console.log(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => null);
+      const errorMessage =
+        errorData?.message || `Error fetching blogs: ${res.status}`;
+      throw new Error(errorMessage);
     }
-    fetchBlogs();
-  }, []); // Empty dependency array means this runs once on mount
 
-  if (loading) return <div>Loading blogs...</div>;
-  if (error) return <div>Error: {error}</div>;
+    const data = await res.json();
+    return data.map((post: BlogListItem) => ({
+      ...post,
+      name: post.name.replace(/\.md$/, ""),
+      title: post.name,
+    }));
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    throw error;
+  }
+}
+
+async function BlogsContent() {
+  const blogs = await getBlogs();
   if (blogs.length === 0) return <div>No blog posts found.</div>;
+  return <BlogsList blogs={blogs} />;
+}
 
+export default function Page() {
   return (
-    <div className="py-12">
-      {/* Update the heading and description */}
-      <Fade direction="up" className="max-w-3xl mx-auto mb-12 text-center">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-          Insights
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          Thoughts and perspectives on business strategy, leadership, and
-          innovation.
-        </p>
-      </Fade>
+    <div>
+      {/* Non-suspended content */}
+      <div className="py-12">
+        <Fade direction="up" className="max-w-3xl mx-auto mb-12 text-center">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+            My Blog
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Thoughts, insights, and updates on various topics I'm passionate
+            about.
+          </p>
+        </Fade>
 
-      <div className="flex justify-end mb-6">
-        <ViewToggle
-          onChange={setViewMode}
-          defaultValue="card-small"
-          storageKey="blog-view-mode"
-        />
+        {/* Suspended content */}
+        <Suspense fallback={<ContentLoadingSkeleton viewMode="card-small" />}>
+          <BlogsContent />
+        </Suspense>
       </div>
-
-      {viewMode === "list" ? (
-        <FadeGroup className="space-y-6" staggerDelay={0.15}>
-          {blogs.map((post) => (
-            <Fade key={post.id}>
-              <div className="flex flex-col md:flex-row gap-6 border rounded-lg p-4 hover:shadow-md transition-all hover:border-primary/50">
-                <div className="md:w-1/3 h-48 relative rounded-md overflow-hidden">
-                  <Image
-                    src={post.thumbnailUrl || "/placeholder.svg"}
-                    alt={post.name}
-                    fill
-                    className="object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-                <div className="md:w-2/3 flex flex-col">
-                  <div className="flex items-center text-sm text-muted-foreground mb-2">
-                    <Calendar className="mr-1 h-4 w-4" />
-                    {post.modifiedTime
-                      ? new Date(post.modifiedTime).toISOString().split("T")[0]
-                      : ""}
-                  </div>
-                  <h2 className="text-2xl font-bold">{post.name}</h2>
-                  <p className="text-muted-foreground mt-2 mb-4">
-                    {post.description}
-                  </p>
-                  <div className="mt-auto">
-                    <Button asChild className="group">
-                      <Link href={`/blog/${post.id}`}>
-                        Read More
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </Fade>
-          ))}
-        </FadeGroup>
-      ) : (
-        <FadeGroup
-          className={`grid gap-8 ${
-            viewMode === "card-small"
-              ? "md:grid-cols-2 lg:grid-cols-3"
-              : "md:grid-cols-1 lg:grid-cols-2"
-          }`}
-          staggerDelay={0.15}
-        >
-          {blogs.map((post) => (
-            <Fade key={post.id}>
-              <Card className="overflow-hidden flex flex-col hover-scale">
-                <div
-                  className={`relative w-full overflow-hidden ${
-                    viewMode === "card-large" ? "h-64" : "h-48"
-                  }`}
-                >
-                  <Image
-                    src={post.thumbnailUrl || "/placeholder.svg"}
-                    alt={post.name}
-                    fill
-                    className="object-cover transition-transform duration-500 hover:scale-110"
-                  />
-                </div>
-                <CardHeader>
-                  <div className="flex items-center text-sm text-muted-foreground mb-2">
-                    <Calendar className="mr-1 h-4 w-4" />
-                    {post.modifiedTime
-                      ? new Date(post.modifiedTime).toISOString().split("T")[0]
-                      : ""}
-                  </div>
-                  <CardTitle>{post.name}</CardTitle>
-                  <CardDescription>{post.description}</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button asChild className="w-full group">
-                    <Link href={`/blogs/${post.id}`}>
-                      Read More
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            </Fade>
-          ))}
-        </FadeGroup>
-      )}
     </div>
   );
-};
-
-export default BlogsPage;
+}

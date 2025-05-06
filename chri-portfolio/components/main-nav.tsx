@@ -26,7 +26,7 @@ export function MainNav() {
         href="/"
         className="mr-6 flex items-center space-x-2 transition-transform hover:scale-105"
       >
-        <span className="font-bold text-xl">Portfolio</span>
+        <span className="font-bold text-xl">Tini's Portfolio</span>
       </Link>
       <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
         {navItems.map((item) => (

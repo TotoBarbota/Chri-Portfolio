@@ -10,7 +10,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const fileId = params.id;
-  console.log("GET request for file ID:", fileId);
 
   if (!fileId) {
     return NextResponse.json(
@@ -20,11 +19,7 @@ export async function GET(
   }
 
   try {
-    console.log("Getting Drive service...");
     const drive = await getDriveService();
-    console.log("Drive service obtained");
-
-    console.log(`Workspaceing file content for ${fileId}...`);
 
     // *** KEY CHANGE: Use alt: 'media' to get the file content stream ***
     const response = await drive.files.get(

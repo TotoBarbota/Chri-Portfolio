@@ -5,11 +5,13 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm"; // Optional: Add support for GitHub Flavored Markdown (tables, task lists etc.)
-import rehypeRaw from "rehype-raw"; // Optional: Allow raw HTML within Markdown (use with caution)
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 // Define the type for the data fetched from the detail API
 interface BlogContentData {
@@ -138,25 +140,121 @@ const BlogDetailPage = () => {
   if (error) return <div>Error: {error}</div>;
   if (!blogData) return <div>No blog data found</div>;
 
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">{blogTitle}</h1>
-      {blogDate && <p className="text-muted-foreground mb-4">{blogDate}</p>}
-      <div className="prose max-w-none">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeRaw]}
-          components={{
-            p: ({ node, children }) => (
-              <CustomTextNode node={node as TextNode}>
-                {children}
-              </CustomTextNode>
-            ),
-          }}
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <article>
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">{blogTitle}</h1>
+          {blogDate && (
+            <p className="text-muted-foreground">
+              {new Date(blogDate).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          )}
+        </header>
+
+        <div
+          className={cn(
+            "prose dark:prose-invert max-w-none",
+            "prose-headings:font-semibold",
+            "prose-h1:text-3xl sm:prose-h1:text-4xl",
+            "prose-h2:text-2xl sm:prose-h2:text-3xl",
+            "prose-h3:text-xl sm:prose-h3:text-2xl",
+            "prose-p:text-base sm:prose-p:text-lg",
+            "prose-a:text-primary hover:prose-a:underline",
+            "prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded",
+            "prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-pre:rounded-lg",
+            "prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic",
+            "prose-img:rounded-lg prose-img:border prose-img:border-border",
+            isDark ? "dark" : ""
+          )}
         >
-          {blogData.content}
-        </ReactMarkdown>
-      </div>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              p: ({ node, children }) => (
+                <CustomTextNode node={node as TextNode}>
+                  {children}
+                </CustomTextNode>
+              ),
+              img: ({ src, alt }) => (
+                <div className="my-6">
+                  <Image
+                    src={src || ""}
+                    alt={alt || ""}
+                    width={800}
+                    height={450}
+                    className="rounded-lg border border-border"
+                  />
+                  {alt && (
+                    <p className="text-sm text-muted-foreground text-center mt-2">
+                      {alt}
+                    </p>
+                  )}
+                </div>
+              ),
+              code: ({ node, inline, className, children, ...props }) => {
+                const match = /language-(\w+)/.exec(className || "");
+                return !inline && match ? (
+                  <div className="relative">
+                    <pre
+                      className={cn(
+                        "p-4 rounded-lg overflow-x-auto",
+                        "bg-muted border border-border",
+                        "text-sm sm:text-base",
+                        "dark:bg-muted/50"
+                      )}
+                    >
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    </pre>
+                  </div>
+                ) : (
+                  <code
+                    className={cn(
+                      "px-1.5 py-0.5 rounded",
+                      "bg-muted text-foreground",
+                      "text-sm",
+                      className
+                    )}
+                    {...props}
+                  >
+                    {children}
+                  </code>
+                );
+              },
+              table: ({ node, ...props }) => (
+                <div className="overflow-x-auto my-6">
+                  <table className="min-w-full border-collapse" {...props} />
+                </div>
+              ),
+              th: ({ node, ...props }) => (
+                <th
+                  className={cn(
+                    "border border-border px-4 py-2 text-left",
+                    "bg-muted/50",
+                    "dark:bg-muted/30"
+                  )}
+                  {...props}
+                />
+              ),
+              td: ({ node, ...props }) => (
+                <td className="border border-border px-4 py-2" {...props} />
+              ),
+            }}
+          >
+            {blogData.content}
+          </ReactMarkdown>
+        </div>
+      </article>
     </div>
   );
   {
