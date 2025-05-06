@@ -1,14 +1,11 @@
 // app/api/projects/[id]/route.ts (Assuming App Router: app/api/projects/[id]/route.ts)
 // If using Pages Router: pages/api/projects/[id].ts (adjust imports & handler export)
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getDriveService } from "@/lib/google-drive"; // Adjust path as needed
 import { Readable } from "stream";
 
 // Use the GET function for App Router API routes
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET({ params }: { params: { id: string } }) {
   const fileId = params.id;
 
   if (!fileId) {
