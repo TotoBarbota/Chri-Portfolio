@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 
 interface ProjectDetailPageProps {
   params: {
-    id?: string;
+    id: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 interface ProjectMetadata {
