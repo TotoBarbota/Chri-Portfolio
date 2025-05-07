@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { getDriveService } from "@/lib/google-drive";
 
 // Define the correct type for the params directly in the function signature
-export async function GET({ params }: { params: { id: string } }) {
+export async function GET(
+  request: Request,
+  // Type the params directly within the destructured object
+  { params }: { params: { id: string } }
+) {
   try {
     // Destructure and rename the id from the correctly typed params
     const { id: fileId } = params;
