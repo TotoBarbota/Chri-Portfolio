@@ -15,11 +15,10 @@ interface BlogContentResponse {
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
-  const params = await context.params;
-
-  const fileId = params.id;
+  const { id } = await params;
+  const fileId = id;
 
   if (!fileId) {
     return NextResponse.json(
