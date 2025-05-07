@@ -1,12 +1,25 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getDriveService } from "@/lib/google-drive";
 
-// Define the correct type for the params directly in the function signature
 export async function GET(
-  request: Request,
-  // Updated type: In some Next.js versions/configurations, params might be a Promise
-  { params }: { params: Promise<{ id: string }> }
-) {
+  request: NextRequest,
+  { params }: { params: { id: string } }
+): Promise<NextResponse> {
+  // Get the ID from the URL parameters
+  const fileId = params.id;
+
+  // Fallback to search params if params.id is not available
+  const searchParams = request.nextUrl.searchParams;
+  const idFromParams = searchParams.get("id");
+  const finalId = fileId || idFromParams;
+
+  if (!finalId) {
+    return NextResponse.json(
+      { message: "Project ID is required" },
+      { status: 400 }
+    );
+  }
+
   try {
     // Await the params promise before destructuring
     const { id: fileId } = await params;
