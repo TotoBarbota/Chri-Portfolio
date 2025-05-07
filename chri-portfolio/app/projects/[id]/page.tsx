@@ -1,10 +1,12 @@
 import { PdfViewerClient } from "@/components/PdfViewerClient";
 import { notFound } from "next/navigation";
+import { JSX } from "react";
 
 interface ProjectDetailPageProps {
   params: {
-    id: Promise<string>;
+    id: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 interface ProjectMetadata {
@@ -38,8 +40,8 @@ async function fetchProjectMetadata(
 
 export default async function ProjectDetailPage({
   params,
-}: ProjectDetailPageProps) {
-  const fileId = await params.id;
+}: ProjectDetailPageProps): Promise<JSX.Element | null> {
+  const fileId = params.id;
 
   if (!fileId) {
     notFound();
