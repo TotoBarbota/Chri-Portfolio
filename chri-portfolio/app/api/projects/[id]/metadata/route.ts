@@ -4,12 +4,12 @@ import { getDriveService } from "@/lib/google-drive";
 // Define the correct type for the params directly in the function signature
 export async function GET(
   request: Request,
-  // Type the params directly within the destructured object
-  { params }: { params: { id: string } }
+  // Updated type: In some Next.js versions/configurations, params might be a Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Destructure and rename the id from the correctly typed params
-    const { id: fileId } = params;
+    // Await the params promise before destructuring
+    const { id: fileId } = await params;
     const drive = await getDriveService();
 
     const response = await drive.files.get({
