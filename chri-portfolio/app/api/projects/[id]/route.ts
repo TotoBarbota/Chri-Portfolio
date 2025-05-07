@@ -6,10 +6,10 @@ import { Readable } from "stream";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
-  const fileId = params.id;
-
+  const { id } = await params;
+  const fileId = id;
   if (!fileId) {
     return NextResponse.json(
       { message: "Project ID is required" },
