@@ -33,7 +33,7 @@ export async function GET(
 
     // Fetch the file content using alt: 'media'
     const response = await drive.files.get({
-      fileId: finalId,
+      fileId: fileId,
       alt: "media" as const, // Use const assertion for type safety
     });
 
@@ -93,7 +93,7 @@ export async function GET(
         { status: 403 }
       );
     } else {
-      console.error(`Error fetching blog file ${finalId}:`, error);
+      console.error(`Error fetching blog file ${fileId}:`, error);
       return NextResponse.json(
         { message: "An unexpected error occurred" },
         { status: 500 }
