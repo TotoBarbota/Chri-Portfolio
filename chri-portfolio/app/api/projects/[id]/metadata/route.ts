@@ -1,32 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDriveService } from "@/lib/google-drive";
 
+// Define a specific type for the context object containing dynamic parameters
+type RouteContext = {
+  params: {
+    /** The project ID extracted from the dynamic route segment [id]. */
+    id: string;
+  };
+};
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  // Use the defined RouteContext type for the second argument
+  context: RouteContext
 ): Promise<NextResponse> {
-  // Get the ID from the URL parameters
-  const fileId = params.id;
+  // Get the ID directly from the dynamic route parameters provided in the context
+  const fileId = context.params.id;
 
-  // Fallback to search params if params.id is not available
-  const searchParams = request.nextUrl.searchParams;
-  const idFromParams = searchParams.get("id");
-  const finalId = fileId || idFromParams;
-
-  if (!finalId) {
+  if (!fileId) {
+    console.warn("Dynamic route parameter 'id' is missing.");
     return NextResponse.json(
-      { message: "Project ID is required" },
+      { message: "Project ID is required in the route path" },
       { status: 400 }
     );
   }
 
   try {
-    // Await the params promise before destructuring
-    const { id: fileId } = await params;
     const drive = await getDriveService();
 
     const response = await drive.files.get({
-      fileId,
+      fileId: fileId, // Use the fileId obtained from dynamic params
       fields: "name, modifiedTime, webViewLink",
     });
 
