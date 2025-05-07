@@ -6,9 +6,9 @@ import { Readable } from "stream";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
-  const params = context.params;
+  const params = await context.params;
 
   const fileId = params.id;
 
