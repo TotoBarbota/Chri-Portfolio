@@ -1,22 +1,25 @@
 import { NextResponse } from "next/server";
 import { getDriveService } from "@/lib/google-drive";
 
-// Add proper type for the params
-interface Params {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(request: Request, { params }: Params) {
+// Define the correct type for the params directly in the function signature
+export async function GET({ params }: { params: { id: string } }) {
   try {
-    const { id: fileId } = params; // Destructure and rename
+    // Destructure and rename the id from the correctly typed params
+    const { id: fileId } = params;
     const drive = await getDriveService();
 
     const response = await drive.files.get({
       fileId,
       fields: "name, modifiedTime, webViewLink",
     });
+
+    // Check if response.data exists before accessing its properties
+    if (!response.data) {
+      return NextResponse.json(
+        { error: "File metadata not found" },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       name: response.data.name,
@@ -25,6 +28,7 @@ export async function GET(request: Request, { params }: Params) {
     });
   } catch (error: unknown) {
     console.error("Error in metadata endpoint:", error);
+    // Provide a more generic error message for the client
     return NextResponse.json(
       { error: "Failed to fetch project metadata" },
       { status: 500 }
