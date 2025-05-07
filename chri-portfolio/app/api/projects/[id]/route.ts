@@ -4,20 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDriveService } from "@/lib/google-drive"; // Adjust path as needed
 import { Readable } from "stream";
 
-// Use the GET function for App Router API routes
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
-  // Get the ID from the URL parameters
+  const params = await context.params;
+
   const fileId = params.id;
 
-  // Fallback to search params if params.id is not available
-  const searchParams = request.nextUrl.searchParams;
-  const idFromParams = searchParams.get("id");
-  const finalId = fileId || idFromParams;
-
-  if (!finalId) {
+  if (!fileId) {
     return NextResponse.json(
       { message: "Project ID is required" },
       { status: 400 }
@@ -30,7 +25,7 @@ export async function GET(
     // *** KEY CHANGE: Use alt: 'media' to get the file content stream ***
     const response = await drive.files.get(
       {
-        fileId: finalId,
+        fileId: fileId,
         alt: "media" as const, // Get the file content bytes
       },
       {

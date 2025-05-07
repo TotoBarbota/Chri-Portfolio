@@ -1,26 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDriveService } from "@/lib/google-drive";
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
-  let fileId: string | null = null;
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
+  const params = await context.params;
+
+  const fileId = params.id;
 
   try {
-    // Parse the URL to extract the dynamic segment directly from the pathname
-    // Assuming the route is /api/projects/[id]/metadata
-    const pathname = request.nextUrl.pathname;
-    const segments = pathname.split("/");
-    // Find the segment that corresponds to the dynamic [id].
-    // This approach can be fragile if the route structure changes.
-    // A more robust parsing might be needed for complex routes.
-    // In this case, we expect the structure to be /api/projects/ID/metadata
-    // So the ID should be the segment before 'metadata'.
-    const metadataIndex = segments.indexOf("metadata");
-    if (metadataIndex > 0 && segments[metadataIndex - 1]) {
-      fileId = segments[metadataIndex - 1];
-    }
-
     if (!fileId) {
-      console.error("Could not extract fileId from URL pathname:", pathname);
       return NextResponse.json(
         { message: "Project ID is required in the route path" },
         { status: 400 }

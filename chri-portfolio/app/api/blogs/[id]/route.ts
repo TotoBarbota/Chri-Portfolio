@@ -21,11 +21,7 @@ export async function GET(
 
   const fileId = params.id;
 
-  const searchParams = request.nextUrl.searchParams;
-  const idFromParams = searchParams.get("id");
-  const finalId = fileId || idFromParams;
-
-  if (!finalId) {
+  if (!fileId) {
     return NextResponse.json(
       { message: "Blog post ID is required" },
       { status: 400 }
