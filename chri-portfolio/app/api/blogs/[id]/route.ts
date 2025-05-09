@@ -6,6 +6,18 @@ import { getDriveService } from "@/lib/google-drive";
 import matter from "gray-matter";
 import { Buffer } from "buffer";
 
+interface GoogleApiError {
+  response?: {
+    status: number;
+    data?: {
+      message?: string;
+    };
+  };
+  errors?: Array<{
+    reason: string;
+  }>;
+}
+
 // Define the expected structure for the blog content response
 interface BlogContentResponse {
   content: string; // The Markdown content after frontmatter
@@ -52,51 +64,21 @@ export async function GET(
       frontmatter: frontmatter,
     } as BlogContentResponse); // Cast to the defined type
   } catch (error: unknown) {
-    const isApiError = (
-      e: unknown
-    ): e is { response: { status: number; data: { message?: string } } } =>
-      typeof e === "object" &&
-      e !== null &&
-      "response" in e &&
-      typeof e.response === "object" &&
-      e.response !== null &&
-      "status" in e.response &&
-      "data" in e.response;
+    console.error(`Error fetching blog file ${fileId}:`, error);
+    let status = 500;
+    let message = "Failed to fetch blog content";
 
-    const hasErrors = (
-      e: unknown
-    ): e is { errors: Array<{ reason: string }> } =>
-      typeof e === "object" &&
-      e !== null &&
-      "errors" in e &&
-      Array.isArray(e.errors) &&
-      e.errors.length > 0 &&
-      "reason" in e.errors[0];
-
-    if (isApiError(error)) {
-      const status = error.response.status;
-      let message = "Failed to fetch blog file.";
-
-      if (status === 404) {
-        message = "Blog file not found.";
-      } else if (status === 403) {
-        message = "Access denied by Google Drive.";
-      } else if (error.response.data?.message) {
-        message = error.response.data.message;
-      }
-
-      return NextResponse.json({ message }, { status });
-    } else if (hasErrors(error) && error.errors[0].reason === "forbidden") {
-      return NextResponse.json(
-        { message: "Access denied by Google Drive." },
-        { status: 403 }
-      );
-    } else {
-      console.error(`Error fetching blog file ${fileId}:`, error);
-      return NextResponse.json(
-        { message: "An unexpected error occurred" },
-        { status: 500 }
-      );
+    const apiError = error as GoogleApiError;
+    
+    if (apiError.response?.status) {
+      status = apiError.response.status;
+      if (status === 404) message = "Blog post not found";
+      else if (status === 403) message = "Access denied by Google Drive";
+    } else if (apiError.errors?.[0]?.reason === "forbidden") {
+      status = 403;
+      message = "Access denied by Google Drive";
     }
+
+    return NextResponse.json({ message }, { status });
   }
 }

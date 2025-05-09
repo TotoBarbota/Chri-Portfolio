@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDriveService } from "@/lib/google-drive";
 
+interface GoogleApiError {
+  response?: {
+    status: number;
+    data?: {
+      message?: string;
+    };
+  };
+  errors?: Array<{
+    reason: string;
+  }>;
+}
+
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   const params = await context.params;
-
   const fileId = params.id;
 
   try {
@@ -39,10 +50,20 @@ export async function GET(
     });
   } catch (error: unknown) {
     console.error("Error in metadata endpoint:", error);
-    // Provide a more generic error message for the client
-    return NextResponse.json(
-      { error: "Failed to fetch project metadata" },
-      { status: 500 }
-    );
+
+    const apiError = error as GoogleApiError;
+    let status = 500;
+    let message = "Failed to fetch project metadata";
+
+    if (apiError.response?.status) {
+      status = apiError.response.status;
+      if (status === 404) message = "File metadata not found";
+      else if (status === 403) message = "Access denied by Google Drive";
+    } else if (apiError.errors?.[0]?.reason === "forbidden") {
+      status = 403;
+      message = "Access denied by Google Drive";
+    }
+
+    return NextResponse.json({ error: message }, { status });
   }
 }

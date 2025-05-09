@@ -183,25 +183,9 @@ const BlogDetailPage = () => {
                   {children}
                 </CustomTextNode>
               ),
-              img: ({ src, alt }) => (
-                <div className="my-6">
-                  <Image
-                    src={src || ""}
-                    alt={alt || ""}
-                    width={800}
-                    height={450}
-                    className="rounded-lg border border-border"
-                  />
-                  {alt && (
-                    <p className="text-sm text-muted-foreground text-center mt-2">
-                      {alt}
-                    </p>
-                  )}
-                </div>
-              ),
-              code: ({ inline, className, children, ...props }) => {
+              code: ({ className, children, ...props }) => {
                 const match = /language-(\w+)/.exec(className || "");
-                return !inline && match ? (
+                return match ? (
                   <div className="relative">
                     <pre
                       className={cn(

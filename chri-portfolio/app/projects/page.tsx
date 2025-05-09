@@ -3,11 +3,7 @@ import { ProjectsList } from "@/components/projects-list";
 import { ContentLoadingSkeleton } from "@/components/content-loading-skeleton";
 import { Fade } from "@/components/motion";
 
-type ProjectsPageProps = {
-  searchParams: {
-    view?: string;
-  };
-};
+type ProjectsPageProps = Promise<{ searchParams: { view?: string } }>;
 
 // Define the type for the data fetched from the list API
 interface ProjectListItem {
@@ -53,8 +49,13 @@ async function ProjectsContent() {
   return <ProjectsList projects={projects} />;
 }
 
-export default function ProjectsPage({ searchParams }: ProjectsPageProps) {
-  const view = searchParams.view === "list" ? "list" : "card-small";
+export default async function ProjectsPage({
+  searchParams,
+}: {
+  searchParams: ProjectsPageProps;
+}) {
+  const { view } = (await searchParams).searchParams;
+  const viewMode = view === "list" ? "list" : "card-small";
 
   return (
     <div>
@@ -71,7 +72,7 @@ export default function ProjectsPage({ searchParams }: ProjectsPageProps) {
         </Fade>
 
         {/* Suspended content */}
-        <Suspense fallback={<ContentLoadingSkeleton viewMode={view} />}>
+        <Suspense fallback={<ContentLoadingSkeleton viewMode={viewMode} />}>
           <ProjectsContent />
         </Suspense>
       </div>

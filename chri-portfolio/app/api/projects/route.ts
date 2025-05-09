@@ -6,6 +6,18 @@ import { getDriveService, DriveFile } from "@/lib/google-drive"; // Adjust path 
 
 // Define the expected structure for the project list response
 // ADDED description and thumbnailUrl (fetched from thumbnail folder)
+interface GoogleApiError {
+  response?: {
+    status: number;
+    data?: {
+      message?: string;
+    };
+  };
+  errors?: Array<{
+    reason: string;
+  }>;
+}
+
 type ProjectListItem = Pick<
   DriveFile,
   "id" | "modifiedTime" | "description"
@@ -95,18 +107,16 @@ export async function GET() {
     let status = 500;
     let message = "Failed to list project files.";
 
-    if (error.response?.status) {
-      status = error.response.status;
+    const apiError = error as GoogleApiError;
+
+    if (apiError.response?.status) {
+      status = apiError.response.status;
       if (status === 403) message = "Access denied by Google Drive.";
-    } else if (
-      error.errors &&
-      error.errors[0] &&
-      error.errors[0].reason === "forbidden"
-    ) {
+    } else if (apiError.errors?.[0]?.reason === "forbidden") {
       status = 403;
       message = "Access denied by Google Drive.";
     }
 
-    return NextResponse.json({ message: message }, { status: status });
+    return NextResponse.json({ message }, { status });
   }
 }
