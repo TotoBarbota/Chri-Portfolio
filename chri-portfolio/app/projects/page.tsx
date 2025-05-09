@@ -16,8 +16,7 @@ interface ProjectListItem {
 
 async function getProjects(): Promise<ProjectListItem[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/projects`, {
+    const res = await fetch(`/api/projects`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -54,7 +53,7 @@ export default async function ProjectsPage({
 }: {
   searchParams: ProjectsPageProps;
 }) {
-  const { view } = (await searchParams).searchParams;
+  const view = (await searchParams)?.searchParams?.view;
   const viewMode = view === "list" ? "list" : "card-small";
 
   return (

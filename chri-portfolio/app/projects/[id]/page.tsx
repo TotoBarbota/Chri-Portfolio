@@ -14,8 +14,7 @@ async function fetchProjectMetadata(
   fileId: string
 ): Promise<ProjectMetadata | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/projects/${fileId}/metadata`, {
+    const res = await fetch(`/api/projects/${fileId}/metadata`, {
       cache: "no-store",
     });
 
