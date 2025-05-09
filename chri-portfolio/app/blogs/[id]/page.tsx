@@ -101,7 +101,13 @@ const BlogDetailPage = () => {
 
     async function fetchBlogContent() {
       try {
-        const res = await fetch(`/api/blogs/${fileId}`);
+        const baseUrl =
+          process.env.NEXT_PUBLIC_BASE_URL ||
+          (process.env.VERCEL_URL
+            ? `https://${process.env.VERCEL_URL}`
+            : "http://localhost:3000");
+
+        const res = await fetch(`${baseUrl}/api/blogs/${fileId}`);
         if (!res.ok) {
           const errorData = await res.json().catch(() => null);
           const errorMessage =

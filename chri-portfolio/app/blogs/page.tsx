@@ -14,7 +14,13 @@ interface BlogListItem {
 
 async function getBlogs(): Promise<BlogListItem[]> {
   try {
-    const res = await fetch(`/api/blogs`, {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000");
+
+    const res = await fetch(`${baseUrl}/api/blogs`, {
       headers: {
         "Content-Type": "application/json",
       },

@@ -14,7 +14,13 @@ async function fetchProjectMetadata(
   fileId: string
 ): Promise<ProjectMetadata | null> {
   try {
-    const res = await fetch(`/api/projects/${fileId}/metadata`, {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000");
+
+    const res = await fetch(`${baseUrl}/api/projects/${fileId}/metadata`, {
       cache: "no-store",
     });
 
@@ -49,7 +55,13 @@ export default async function ProjectDetailPage({
     metadata.name = metadata.name.replace(/\.[^.]+$/, "");
   }
 
-  const pdfUrl = `/api/projects/${fileId}`;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000");
+
+  const pdfUrl = `${baseUrl}/api/projects/${fileId}`;
 
   if (!metadata) {
     return (
