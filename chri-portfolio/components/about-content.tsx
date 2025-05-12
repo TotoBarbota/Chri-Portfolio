@@ -36,7 +36,7 @@ export function AboutContent({ skills }: AboutContentProps) {
 
         <div className="flex justify-center md:justify-start gap-4">
           <Button asChild className="hover-lift">
-            <Link href="mailto:christina.ananastasopoulou@outlook.com">
+            <Link href="mailto:christina.anastasopoulou@outlook.com">
               <Mail className="mr-2 h-4 w-4" />
               Contact Me
             </Link>
@@ -44,7 +44,7 @@ export function AboutContent({ skills }: AboutContentProps) {
           <ResumeDownloadButton />
           <Button variant="outline" size="icon" asChild className="hover-lift">
             <Link
-              href="https://www.linkedin.com/in/christina-anastasopoulou"
+              href="https://www.linkedin.com/in/christinaanastasopoulou"
               target="_blank"
               rel="noopener noreferrer"
             >
