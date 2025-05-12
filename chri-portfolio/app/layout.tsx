@@ -43,7 +43,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <footer className="border-t py-8">
               <div className="container flex flex-col items-center justify-center gap-4 md:flex-row md:justify-between text-sm text-muted-foreground">
                 <p>
-                  © {new Date().getFullYear()} Your Name. All rights reserved.
+                  © {new Date().getFullYear()} Christina Anastasopoulou. All
+                  rights reserved.
                 </p>
                 {/* <div className="flex items-center gap-4">
                   <Link href="https://twitter.com">Twitter</Link>
