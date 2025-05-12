@@ -48,7 +48,14 @@ async function getBlogs(): Promise<BlogListItem[]> {
 
 async function BlogsContent() {
   const blogs = await getBlogs();
-  if (blogs.length === 0) return <div>No blog posts found.</div>;
+  if (blogs.length === 0)
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-lg font-bold tracking-tight text-muted-foreground sm:text-xl md:text-2xl">
+          Coming Soon!
+        </h2>
+      </div>
+    );
   return <BlogsList blogs={blogs} />;
 }
 

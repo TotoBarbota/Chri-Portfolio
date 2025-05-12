@@ -46,16 +46,14 @@ export function BlogsList({ blogs }: BlogsListProps) {
           {blogs.map((blog) => (
             <Fade key={blog.id}>
               <div className="flex flex-col md:flex-row gap-6 border rounded-lg p-4 hover:shadow-md transition-all hover:border-primary/50">
-                {blog.thumbnailUrl && (
-                  <div className="md:w-1/3 h-48 relative rounded-md overflow-hidden">
-                    <Image
-                      src={blog.thumbnailUrl}
-                      alt={blog.name}
-                      fill
-                      className="object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                  </div>
-                )}
+                <div className="md:w-1/3 h-48 relative rounded-md overflow-hidden">
+                  <Image
+                    src={blog.thumbnailUrl || "/Dummy-Thumbnail.png"}
+                    alt={blog.name}
+                    fill
+                    className="object-cover transition-transform duration-500 hover:scale-105"
+                  />
+                </div>
                 <div className="flex-1 flex flex-col">
                   <h2 className="text-2xl font-bold">{blog.name}</h2>
                   <div className="flex items-center text-sm text-muted-foreground mb-2">
@@ -92,20 +90,18 @@ export function BlogsList({ blogs }: BlogsListProps) {
           {blogs.map((blog) => (
             <Fade key={blog.id}>
               <Card className="overflow-hidden flex flex-col h-full hover-scale transition-transform duration-200 hover:shadow-lg">
-                {blog.thumbnailUrl && (
-                  <div
-                    className={`relative w-full overflow-hidden ${
-                      viewMode === "card-large" ? "h-80" : "h-56"
-                    }`}
-                  >
-                    <Image
-                      src={blog.thumbnailUrl}
-                      alt={blog.name}
-                      fill
-                      className="object-cover transition-transform duration-500 hover:scale-110"
-                    />
-                  </div>
-                )}
+                <div
+                  className={`relative w-full overflow-hidden ${
+                    viewMode === "card-large" ? "h-80" : "h-56"
+                  }`}
+                >
+                  <Image
+                    src={blog.thumbnailUrl || "/Dummy-Thumbnail.png"}
+                    alt={blog.name}
+                    fill
+                    className="object-cover transition-transform duration-500 hover:scale-110"
+                  />
+                </div>
                 <CardHeader>
                   <CardTitle>{blog.name}</CardTitle>
                   <div className="flex items-center text-sm text-muted-foreground mb-2">

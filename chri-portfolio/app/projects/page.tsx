@@ -71,8 +71,8 @@ export default async function ProjectsPage({
             My Projects
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            A showcase of strategic initiatives and business transformations
-            I&apos;ve led.
+            A collection of research essays and academic projects I&apos;ve
+            completed.
           </p>
         </Fade>
 

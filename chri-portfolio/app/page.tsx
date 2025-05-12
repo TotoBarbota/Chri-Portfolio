@@ -11,14 +11,16 @@ export default function Home() {
         <Fade direction="up" delay={0.1}>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
             <span className="block">Hello, I&apos;m</span>
-            <span className="block text-primary mt-2">Your Name</span>
+            <span className="block text-primary mt-2">
+              Christina Anastasopoulou
+            </span>
           </h1>
         </Fade>
 
         <Fade direction="up" delay={0.3}>
           <p className="text-xl text-muted-foreground max-w-lg mx-auto">
-            A strategic business leader driving innovation and sustainable
-            growth.
+            A passionate business and management student eager to learn and grow
+            in the world of business.
           </p>
         </Fade>
 

@@ -1,17 +1,26 @@
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { config } from "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/mode-toggle";
 import { MainNav } from "@/components/main-nav";
 import "./globals.css";
 
+config.autoAddCss = false; // Prevent fontawesome from adding its CSS since we did it manually above
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Portfolio | Your Name",
+  title: "Christina's Portfolio",
   description: "Personal portfolio showcasing my projects, blog, and more",
+  icons: {
+    icon: "/main-logo-full.ico",
+    shortcut: "/main-logo-full.ico",
+    apple: "/main-logo.png", // Keep PNG for Apple touch icon as it requires higher resolution
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

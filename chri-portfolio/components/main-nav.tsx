@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,13 @@ export function MainNav() {
         href="/"
         className="mr-6 flex items-center space-x-2 transition-transform hover:scale-105"
       >
-        <span className="font-bold text-xl">Tini&apos;s Portfolio</span>
+        <Image
+          src="/main-logo.png"
+          alt="Portfolio Logo"
+          width={40}
+          height={40}
+          className="object-contain"
+        />
       </Link>
       <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
         {navItems.map((item) => (
