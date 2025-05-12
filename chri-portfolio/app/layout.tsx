@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   title: "Christina's Portfolio",
   description: "Personal portfolio showcasing my projects, blog, and more",
   icons: {
-    icon: "/main-logo-full.ico",
-    shortcut: "/main-logo-full.ico",
+    icon: "/main-logo.ico",
+    shortcut: "/main-logo.ico",
     apple: "/main-logo.png", // Keep PNG for Apple touch icon as it requires higher resolution
   },
 };
