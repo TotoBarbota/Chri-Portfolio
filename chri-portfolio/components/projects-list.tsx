@@ -47,7 +47,7 @@ export function ProjectsList({ projects }: ProjectsListProps) {
               <div className="flex flex-col md:flex-row gap-6 border rounded-lg p-4 hover:shadow-md transition-all hover:border-primary/50">
                 <div className="md:w-1/3 h-48 relative rounded-md overflow-hidden">
                   <Image
-                    src={project.thumbnailUrl || "/placeholder.svg"}
+                    src={project.thumbnailUrl || "/Dummy-Thumbnail.png"}
                     alt={project.name}
                     fill
                     className="object-cover transition-transform duration-500 hover:scale-105"

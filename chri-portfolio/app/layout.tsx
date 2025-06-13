@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
-
+import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/mode-toggle";
 import { MainNav } from "@/components/main-nav";
@@ -39,7 +39,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <MainNav />
               <ModeToggle />
             </header>
-            <main className="container pb-8">{children}</main>
+            <main className="container pb-8">
+              {children}
+              <Analytics />
+            </main>
             <footer className="border-t py-8">
               <div className="container flex flex-col items-center justify-center gap-4 md:flex-row md:justify-between text-sm text-muted-foreground">
                 <p>
