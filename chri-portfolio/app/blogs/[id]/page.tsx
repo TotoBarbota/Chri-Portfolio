@@ -97,7 +97,8 @@ function formatBlogDate(dateStr?: string): string | null {
   const ddmmyyyy = /^(\d{2})-(\d{2})-(\d{4})$/;
   const match = ddmmyyyy.exec(dateStr);
   if (match) {
-    const [_, day, month, year] = match;
+    // Remove unused variable '_'
+    const [day, month, year] = match.slice(1);
     const dateObj = new Date(Number(year), Number(month) - 1, Number(day));
     return dateObj.toLocaleDateString("en-US", {
       year: "numeric",
