@@ -59,9 +59,11 @@ export function ProjectsList({ projects }: ProjectsListProps) {
                   <div className="flex items-center text-sm text-muted-foreground mb-2">
                     <Calendar className="mr-1 h-4 w-4" />
                     {project.modifiedTime
-                      ? new Date(project.modifiedTime)
-                          .toISOString()
-                          .split("T")[0]
+                      ? `Last modified: ${
+                          new Date(project.modifiedTime)
+                            .toISOString()
+                            .split("T")[0]
+                        }`
                       : ""}
                   </div>
                   <p className="text-muted-foreground mt-2 mb-4">
@@ -115,10 +117,13 @@ export function ProjectsList({ projects }: ProjectsListProps) {
                   <CardTitle>{project.name}</CardTitle>
                   <div className="flex items-center text-sm text-muted-foreground mb-2">
                     <Calendar className="mr-1 h-4 w-4" />
+                    <p>Last Modified: </p>
                     {project.modifiedTime
-                      ? new Date(project.modifiedTime)
-                          .toISOString()
-                          .split("T")[0]
+                      ? `Last modified: ${
+                          new Date(project.modifiedTime)
+                            .toISOString()
+                            .split("T")[0]
+                        }`
                       : ""}
                   </div>
                   {/* <CardDescription></CardDescription> */}

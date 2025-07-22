@@ -59,7 +59,11 @@ export function BlogsList({ blogs }: BlogsListProps) {
                   <div className="flex items-center text-sm text-muted-foreground mb-2">
                     <Calendar className="mr-1 h-4 w-4" />
                     {blog.modifiedTime
-                      ? new Date(blog.modifiedTime).toISOString().split("T")[0]
+                      ? `Last modified: ${
+                          new Date(blog.modifiedTime)
+                            .toISOString()
+                            .split("T")[0]
+                        }`
                       : ""}
                   </div>
                   <p className="text-muted-foreground mt-2 mb-4">
@@ -107,7 +111,11 @@ export function BlogsList({ blogs }: BlogsListProps) {
                   <div className="flex items-center text-sm text-muted-foreground mb-2">
                     <Calendar className="mr-1 h-4 w-4" />
                     {blog.modifiedTime
-                      ? new Date(blog.modifiedTime).toISOString().split("T")[0]
+                      ? `Last modified: ${
+                          new Date(blog.modifiedTime)
+                            .toISOString()
+                            .split("T")[0]
+                        }`
                       : ""}
                   </div>
                 </CardHeader>

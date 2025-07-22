@@ -77,6 +77,39 @@ const CustomTextNode: React.FC<{
   return <>{children}</>;
 };
 
+// Utility to format date from DD-MM-YYYY to "Month D, YYYY"
+function formatBlogDate(dateStr?: string): string | null {
+  if (!dateStr) return null;
+  // Log the original input string
+  // console.log("Original date string:", dateStr);
+
+  // If ISO format, just parse it
+  if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+    const dateObj = new Date(dateStr);
+    return dateObj.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
+  // If DD-MM-YYYY format
+  const ddmmyyyy = /^(\d{2})-(\d{2})-(\d{4})$/;
+  const match = ddmmyyyy.exec(dateStr);
+  if (match) {
+    const [_, day, month, year] = match;
+    const dateObj = new Date(Number(year), Number(month) - 1, Number(day));
+    return dateObj.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
+  // Fallback: return as-is
+  return dateStr;
+}
+
 const BlogDetailPage = () => {
   const params = useParams();
   const id = params.id as string | string[];
@@ -91,6 +124,7 @@ const BlogDetailPage = () => {
   // State for blog metadata
   const [blogTitle, setBlogTitle] = useState<string>("Loading Blog Post...");
   const [blogDate, setBlogDate] = useState<string | null>(null);
+  const [blogAuthor, setBlogAuthor] = useState<string | null>(null); // Add author state
 
   useEffect(() => {
     if (!fileId) {
@@ -126,11 +160,11 @@ const BlogDetailPage = () => {
 
         setBlogData(data as BlogContentData);
         setBlogTitle(frontmatter.title || "Untitled Blog Post");
-        setBlogDate(
-          frontmatter.date
-            ? new Date(frontmatter.date).toLocaleDateString()
-            : null
-        );
+        if (blogTitle && blogTitle !== "Untitled Blog Post") {
+          document.title = blogTitle;
+        }
+        setBlogDate(frontmatter.date ? formatBlogDate(frontmatter.date) : null);
+        setBlogAuthor(frontmatter.author ? String(frontmatter.author) : null); // Set author
       } catch (err: unknown) {
         const errorMessage =
           err instanceof Error ? err.message : "An unexpected error occurred";
@@ -142,7 +176,7 @@ const BlogDetailPage = () => {
     }
 
     fetchBlogContent();
-  }, [fileId]);
+  }, [fileId, blogTitle]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -153,14 +187,11 @@ const BlogDetailPage = () => {
       <article>
         <header className="mb-8">
           <h1 className="text-4xl font-bold mb-2">{blogTitle}</h1>
+          {blogAuthor && (
+            <p className="text-muted-foreground">By {blogAuthor}</p>
+          )}
           {blogDate && (
-            <p className="text-muted-foreground">
-              {new Date(blogDate).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
+            <p className="text-muted-foreground">Uploaded on: {blogDate}</p>
           )}
         </header>
 
@@ -168,9 +199,10 @@ const BlogDetailPage = () => {
           className={cn(
             "prose dark:prose-invert max-w-none",
             "prose-headings:font-semibold",
-            "prose-h1:text-3xl sm:prose-h1:text-4xl",
-            "prose-h2:text-2xl sm:prose-h2:text-3xl",
+            "prose-h1:text-3xl sm:prose-h1:text-4xl prose-h1:text-primary prose-h1:mb-6 prose-h1:font-extrabold",
+            "prose-h2:text-2xl sm:prose-h2:text-3xl prose-h2:text-primary prose-h2:mb-6 prose-h2:font-extrabold",
             "prose-h3:text-xl sm:prose-h3:text-2xl",
+            "prose-h4:text-l sm:prose-h4:text-xl",
             "prose-p:text-base sm:prose-p:text-lg",
             "prose-a:text-primary hover:prose-a:underline",
             "prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded",
@@ -244,23 +276,14 @@ const BlogDetailPage = () => {
           </ReactMarkdown>
         </div>
       </article>
+      <style jsx global>{`
+        .prose h2 {
+          margin-top: 1em !important;
+          margin-bottom: 0.5em !important;
+        }
+      `}</style>
     </div>
   );
-  {
-    /* Optional: Add custom CSS for the blog content if not using Tailwind Prose */
-  }
-  {
-    /*
-       <style jsx global>{`
-         .blog-content h1, .blog-content h2, .blog-content h3 { margin-top: 1em; }
-         .blog-content p { margin-bottom: 1em; line-height: 1.6; }
-         .blog-content pre { background-color: #f4f4f4; padding: 10px; overflow-x: auto; border-radius: 5px; }
-         .blog-content code { font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; }
-         .blog-content img { max-width: 100%; height: auto; }
-         /* Add more styling for lists, blockquotes, etc. `}
-       </style>
-       */
-  }
 };
 
 export default BlogDetailPage;
