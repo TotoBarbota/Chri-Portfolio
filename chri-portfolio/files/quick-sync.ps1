@@ -85,6 +85,7 @@ if (-not $status) {
 
 # Add, commit, and push
 Write-Host "Syncing changes to GitHub..." -ForegroundColor Cyan
+Write-Host "Including: Projects, Blogs, Pictures, Blog-Images, and Resume" -ForegroundColor DarkGray
 
 git add files/
 $commitMessage = "Update content: $(Get-Date -Format 'yyyy-MM-dd HH:mm')"

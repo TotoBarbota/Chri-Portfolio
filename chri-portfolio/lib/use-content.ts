@@ -1,6 +1,6 @@
 // lib/use-content.ts
 import { useEffect, useState } from "react";
-import { DriveFile } from "./google-drive";
+import { ProjectMetadata } from "./types";
 
 export function useContentProjects() {
   console.log("Called useContentProjects");
@@ -49,7 +49,7 @@ export function useContentProjects() {
 }
 
 export function useProject(fileId: string) {
-  const [project, setProject] = useState<DriveFile | null>(null);
+  const [project, setProject] = useState<ProjectMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +57,7 @@ export function useProject(fileId: string) {
     const fetchContent = async () => {
       try {
         console.log(`Fetching project file ${fileId}`);
-        const response = await fetch(`/api/projects/${fileId}`, {
+        const response = await fetch(`/api/projects/${fileId}/metadata`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

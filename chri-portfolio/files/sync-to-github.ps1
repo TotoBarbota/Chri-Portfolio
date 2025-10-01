@@ -329,7 +329,16 @@ if ($confirmation -ne 'Y' -and $confirmation -ne 'y') {
 
 Write-Host ""
 Write-Host "Syncing changes..." -ForegroundColor Cyan
+Write-Host "Including: Projects, Blogs, Pictures, Blog-Images, and Resume" -ForegroundColor DarkGray
 Write-Host ""
+
+# Check if resume.pdf exists and warn if not
+$resumePath = Join-Path $FilesDir "resume.pdf"
+if (-not (Test-Path $resumePath)) {
+    Write-Host "⚠ Warning: resume.pdf not found in files directory" -ForegroundColor Yellow
+    Write-Host "  Resume downloads will not work until you add resume.pdf" -ForegroundColor DarkGray
+    Write-Host ""
+}
 
 # Add all changes in the files directory
 Write-Host "→ Adding changes..." -ForegroundColor White

@@ -1,6 +1,5 @@
 // app/api/files/blog-images/[filename]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getPictureFile } from "@/lib/local-files";
 import path from "path";
 import fs from "fs/promises";
 

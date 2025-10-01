@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { BlogsList } from "@/components/blogs-list";
 import { ContentLoadingSkeleton } from "@/components/content-loading-skeleton";
 import { Fade } from "@/components/motion";
+import { listBlogs } from "@/lib/local-files";
 
 interface BlogListItem {
   id: string;
@@ -14,31 +15,15 @@ interface BlogListItem {
 
 async function getBlogs(): Promise<BlogListItem[]> {
   try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000");
+    const blogs = await listBlogs();
 
-    const res = await fetch(`${baseUrl}/api/blogs`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => null);
-      const errorMessage =
-        errorData?.message || `Error fetching blogs: ${res.status}`;
-      throw new Error(errorMessage);
-    }
-
-    const data = await res.json();
-    return data.map((post: BlogListItem) => ({
-      ...post,
-      name: post.name.replace(/\.md$/, ""),
-      title: post.name,
+    return blogs.map((blog) => ({
+      id: blog.id,
+      name: blog.name.replace(/\.md$/, ""),
+      title: blog.name,
+      modifiedTime: blog.modifiedTime,
+      description: blog.description,
+      thumbnailUrl: blog.thumbnailPath,
     }));
   } catch (error) {
     console.error("Error fetching blogs:", error);

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { ProjectsList } from "@/components/projects-list";
 import { ContentLoadingSkeleton } from "@/components/content-loading-skeleton";
 import { Fade } from "@/components/motion";
+import { listProjects } from "@/lib/local-files";
 
 type ProjectsPageProps = Promise<{ searchParams: { view?: string } }>;
 
@@ -16,32 +17,14 @@ interface ProjectListItem {
 
 async function getProjects(): Promise<ProjectListItem[]> {
   try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000");
+    const projects = await listProjects();
 
-    const res = await fetch(`${baseUrl}/api/projects`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store", // Ensure fresh data on each request
-    });
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => null);
-      const errorMessage =
-        errorData?.message ||
-        `Failed to fetch projects (Status: ${res.status})`;
-      throw new Error(errorMessage);
-    }
-    const data = await res.json();
-    if (!Array.isArray(data)) {
-      throw new Error("Invalid response format: expected array");
-    }
-    return data.map((post: ProjectListItem) => ({
-      ...post,
-      name: post.name.replace(/\.pdf$/, ""),
+    return projects.map((project) => ({
+      id: project.id,
+      name: project.name.replace(/\.pdf$/, ""),
+      modifiedTime: project.modifiedTime,
+      description: project.description,
+      thumbnailUrl: project.thumbnailPath,
     }));
   } catch (error) {
     console.error("Error fetching projects:", error);

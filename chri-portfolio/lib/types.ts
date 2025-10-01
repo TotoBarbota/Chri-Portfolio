@@ -10,7 +10,13 @@ export interface Project {
   id: string;
   name: string;
   description: string;
-  type: 'pdf' | 'ppt';
+  type: "pdf" | "ppt";
   url: string;
   lastModified: string;
+}
+
+export interface ProjectMetadata {
+  name: string;
+  modifiedTime: string;
+  description?: string;
 }
