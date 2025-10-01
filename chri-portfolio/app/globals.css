@@ -167,3 +167,181 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Enhanced Markdown/Prose Styling */
+.prose {
+  /* Smooth scrolling for anchor links */
+  scroll-behavior: smooth;
+}
+
+/* Code block enhancements */
+.prose pre {
+  position: relative;
+  font-variant-ligatures: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.prose pre code {
+  display: block;
+  line-height: 1.7;
+  font-size: 0.875em;
+}
+
+/* Inline code enhancements */
+.prose :not(pre) > code {
+  font-weight: 600;
+  font-variant-ligatures: none;
+}
+
+/* Selection styling */
+.prose ::selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: inherit;
+}
+
+/* Link underline animation */
+.prose a {
+  position: relative;
+  text-decoration-thickness: 2px;
+}
+
+/* Blockquote enhancements */
+.prose blockquote p:first-of-type::before {
+  content: "";
+}
+
+.prose blockquote p:last-of-type::after {
+  content: "";
+}
+
+/* Table enhancements */
+.prose table {
+  font-size: 0.95em;
+}
+
+.prose thead th {
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+/* List marker positioning */
+.prose ul > li::marker,
+.prose ol > li::marker {
+  font-weight: 600;
+}
+
+/* Nested list spacing */
+.prose ul ul,
+.prose ul ol,
+.prose ol ul,
+.prose ol ol {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+/* Image captions (if using figure/figcaption) */
+.prose figure {
+  margin: 2em 0;
+}
+
+.prose figcaption {
+  font-size: 0.875em;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.5em;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Horizontal rule styling */
+.prose hr {
+  position: relative;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    hsl(var(--border)),
+    transparent
+  );
+  border: none;
+}
+
+/* Math blocks (if using KaTeX or similar) */
+.prose .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1em 0;
+}
+
+.prose .math {
+  font-size: 1.1em;
+}
+
+/* Task list styling */
+.prose input[type="checkbox"] {
+  width: 1em;
+  height: 1em;
+  margin-right: 0.5em;
+  cursor: pointer;
+  accent-color: hsl(var(--primary));
+}
+
+.prose li:has(> input[type="checkbox"]) {
+  list-style-type: none;
+  margin-left: -1.5em;
+}
+
+/* Footnotes (if using remark-footnotes) */
+.prose .footnotes {
+  margin-top: 3em;
+  padding-top: 1.5em;
+  border-top: 2px solid hsl(var(--border));
+  font-size: 0.875em;
+}
+
+.prose .footnotes ol {
+  padding-left: 1.5em;
+}
+
+/* Definition lists */
+.prose dl {
+  margin: 1.5em 0;
+}
+
+.prose dt {
+  font-weight: 600;
+  margin-top: 1em;
+  color: hsl(var(--foreground));
+}
+
+.prose dd {
+  margin-left: 1.5em;
+  margin-top: 0.25em;
+  color: hsl(var(--foreground) / 0.9);
+}
+
+/* Keyboard key styling */
+.prose kbd {
+  display: inline-block;
+  padding: 0.125em 0.375em;
+  font-size: 0.875em;
+  font-family: ui-monospace, monospace;
+  background-color: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 0 hsl(var(--border));
+}
+
+/* Abbr/acronym styling */
+.prose abbr[title] {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+/* Mark/highlight styling */
+.prose mark {
+  background-color: hsl(var(--primary) / 0.15);
+  color: hsl(var(--foreground));
+  padding: 0.125em 0.25em;
+  border-radius: 0.125rem;
+}

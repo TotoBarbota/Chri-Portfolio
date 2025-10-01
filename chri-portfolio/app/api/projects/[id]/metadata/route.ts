@@ -1,17 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDriveService } from "@/lib/google-drive";
-
-interface GoogleApiError {
-  response?: {
-    status: number;
-    data?: {
-      message?: string;
-    };
-  };
-  errors?: Array<{
-    reason: string;
-  }>;
-}
+import { getProjectMetadata } from "@/lib/local-files";
 
 export async function GET(
   request: NextRequest,
@@ -28,15 +16,9 @@ export async function GET(
       );
     }
 
-    const drive = await getDriveService();
+    const metadata = await getProjectMetadata(fileId);
 
-    const response = await drive.files.get({
-      fileId: fileId, // Use the extracted fileId
-      fields: "name, modifiedTime, webViewLink",
-    });
-
-    // Check if response.data exists before accessing its properties
-    if (!response.data) {
+    if (!metadata) {
       return NextResponse.json(
         { error: "File metadata not found" },
         { status: 404 }
@@ -44,26 +26,15 @@ export async function GET(
     }
 
     return NextResponse.json({
-      name: response.data.name,
-      modifiedTime: response.data.modifiedTime,
-      webViewLink: response.data.webViewLink,
+      name: metadata.name,
+      modifiedTime: metadata.modifiedTime,
+      description: metadata.description,
     });
   } catch (error: unknown) {
     console.error("Error in metadata endpoint:", error);
-
-    const apiError = error as GoogleApiError;
-    let status = 500;
-    let message = "Failed to fetch project metadata";
-
-    if (apiError.response?.status) {
-      status = apiError.response.status;
-      if (status === 404) message = "File metadata not found";
-      else if (status === 403) message = "Access denied by Google Drive";
-    } else if (apiError.errors?.[0]?.reason === "forbidden") {
-      status = 403;
-      message = "Access denied by Google Drive";
-    }
-
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json(
+      { error: "Failed to fetch project metadata" },
+      { status: 500 }
+    );
   }
 }
