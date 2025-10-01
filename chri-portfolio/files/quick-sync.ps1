@@ -8,6 +8,43 @@ $RepoRoot = Split-Path -Parent $FilesDir
 # Change to repository root
 Set-Location $RepoRoot
 
+# Check Git configuration
+Write-Host "Checking Git configuration..." -ForegroundColor Cyan
+
+$gitUserName = git config user.name
+$gitUserEmail = git config user.email
+
+if (-not $gitUserName -or -not $gitUserEmail) {
+    Write-Host "✗ Git user not configured" -ForegroundColor Red
+    Write-Host ""
+    
+    if (-not $gitUserName) {
+        Write-Host "Enter your Git username (e.g., 'John Doe'):" -ForegroundColor Yellow
+        $newUserName = Read-Host "Username"
+        if ([string]::IsNullOrWhiteSpace($newUserName)) {
+            Write-Host "✗ Username cannot be empty" -ForegroundColor Red
+            exit 1
+        }
+        git config --global user.name "$newUserName"
+        Write-Host "✓ Git username set to: $newUserName" -ForegroundColor Green
+    }
+    
+    if (-not $gitUserEmail) {
+        Write-Host "Enter your Git email (e.g., 'john@example.com'):" -ForegroundColor Yellow
+        $newUserEmail = Read-Host "Email"
+        if ([string]::IsNullOrWhiteSpace($newUserEmail)) {
+            Write-Host "✗ Email cannot be empty" -ForegroundColor Red
+            exit 1
+        }
+        git config --global user.email "$newUserEmail"
+        Write-Host "✓ Git email set to: $newUserEmail" -ForegroundColor Green
+    }
+    
+    Write-Host ""
+} else {
+    Write-Host "✓ Git configured as: $gitUserName <$gitUserEmail>" -ForegroundColor Green
+}
+
 # Fetch latest changes from remote
 Write-Host "Checking remote repository..." -ForegroundColor Cyan
 git fetch origin --quiet

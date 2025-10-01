@@ -184,6 +184,61 @@ if (-not (Test-Path ".git")) {
 }
 
 Write-Host ""
+Write-Host "Checking Git configuration..." -ForegroundColor Cyan
+
+$gitUserName = git config user.name
+$gitUserEmail = git config user.email
+
+if (-not $gitUserName -or -not $gitUserEmail) {
+    Write-Host "✗ Git user information not configured" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Git needs your identity to create commits." -ForegroundColor White
+    Write-Host "This information will be associated with your commits." -ForegroundColor DarkGray
+    Write-Host ""
+    
+    if (-not $gitUserName) {
+        Write-Host "Enter your name (e.g., 'John Doe'):" -ForegroundColor Cyan
+        Write-Host "This will be visible in commit history" -ForegroundColor DarkGray
+        $newUserName = Read-Host "Name"
+        
+        if ([string]::IsNullOrWhiteSpace($newUserName)) {
+            Write-Host ""
+            Write-Host "✗ Name cannot be empty" -ForegroundColor Red
+            pause
+            exit 1
+        }
+        
+        git config user.name "$newUserName"
+        Write-Host "✓ Git username set to: $newUserName" -ForegroundColor Green
+        Write-Host ""
+    }
+    
+    if (-not $gitUserEmail) {
+        Write-Host "Enter your email (e.g., 'john@example.com'):" -ForegroundColor Cyan
+        Write-Host "Use your GitHub email to link commits to your account" -ForegroundColor DarkGray
+        $newUserEmail = Read-Host "Email"
+        
+        if ([string]::IsNullOrWhiteSpace($newUserEmail)) {
+            Write-Host ""
+            Write-Host "✗ Email cannot be empty" -ForegroundColor Red
+            pause
+            exit 1
+        }
+        
+        git config user.email "$newUserEmail"
+        Write-Host "✓ Git email set to: $newUserEmail" -ForegroundColor Green
+        Write-Host ""
+    }
+    
+    Write-Host "───────────────────────────────────────────" -ForegroundColor DarkGray
+    Write-Host "Git configuration saved!" -ForegroundColor Green
+    Write-Host "Future commits will use: $newUserName <$newUserEmail>" -ForegroundColor White
+    Write-Host "───────────────────────────────────────────" -ForegroundColor DarkGray
+} else {
+    Write-Host "✓ Git configured as: $gitUserName <$gitUserEmail>" -ForegroundColor Green
+}
+
+Write-Host ""
 Write-Host "Checking remote repository..." -ForegroundColor Cyan
 
 # Fetch latest changes from remote
