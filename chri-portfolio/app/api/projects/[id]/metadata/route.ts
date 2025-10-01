@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProjectMetadata } from "@/lib/local-files";
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -27,11 +38,20 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
-      name: metadata.name,
-      modifiedTime: metadata.modifiedTime,
-      description: metadata.description,
-    });
+    return NextResponse.json(
+      {
+        name: metadata.name,
+        modifiedTime: metadata.modifiedTime,
+        description: metadata.description,
+      },
+      {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      }
+    );
   } catch (error: unknown) {
     console.error("Error in metadata endpoint:", error);
     return NextResponse.json(

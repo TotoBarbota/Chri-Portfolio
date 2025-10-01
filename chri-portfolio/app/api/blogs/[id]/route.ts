@@ -10,6 +10,17 @@ interface BlogContentResponse {
   message?: string; // For error messages
 }
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -22,7 +33,12 @@ export async function GET(
   if (!fileId) {
     return NextResponse.json(
       { message: "Blog post ID is required" },
-      { status: 400 }
+      {
+        status: 400,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+      }
     );
   }
 
@@ -39,11 +55,20 @@ export async function GET(
     // Use gray-matter to parse frontmatter and content
     const { data: frontmatter, content } = matter(markdownContent);
 
-    // Return the parsed content and frontmatter
-    return NextResponse.json({
-      content: content,
-      frontmatter: frontmatter,
-    } as BlogContentResponse);
+    // Return the parsed content and frontmatter with CORS headers
+    return NextResponse.json(
+      {
+        content: content,
+        frontmatter: frontmatter,
+      } as BlogContentResponse,
+      {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      }
+    );
   } catch (error: unknown) {
     console.error(`Error fetching blog file ${fileId}:`, error);
     return NextResponse.json(
