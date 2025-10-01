@@ -8,6 +8,8 @@ export async function GET(
   const params = await context.params;
   const fileId = params.id;
 
+  console.log(`[API Metadata] Received project ID: "${fileId}"`);
+
   try {
     if (!fileId) {
       return NextResponse.json(

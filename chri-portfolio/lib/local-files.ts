@@ -11,7 +11,7 @@ const BLOGS_DIR = path.join(FILES_BASE_DIR, "Blogs");
 const PICTURES_DIR = path.join(FILES_BASE_DIR, "Pictures");
 
 export type LocalFile = {
-  id: string; // filename without extension
+  id: string; // URL-safe slug
   name: string; // filename without extension (display name)
   fileName: string; // full filename with extension
   mimeType: string;
@@ -19,6 +19,16 @@ export type LocalFile = {
   description?: string;
   thumbnailPath?: string; // relative path to thumbnail
 };
+
+/**
+ * Convert a filename to a URL-safe slug
+ */
+function createSlug(filename: string): string {
+  return filename
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric chars with hyphens
+    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+}
 
 /**
  * Get the mime type based on file extension
@@ -92,8 +102,8 @@ export async function listProjects(): Promise<LocalFile[]> {
         const thumbnailPath = await findThumbnail(baseName);
 
         return {
-          id: baseName,
-          name: baseName,
+          id: createSlug(baseName), // URL-safe slug
+          name: baseName, // Display name (original)
           fileName: fileName,
           mimeType: getMimeType(fileName),
           modifiedTime: stats.mtime.toISOString(),
@@ -133,8 +143,8 @@ export async function listBlogs(): Promise<LocalFile[]> {
         const thumbnailPath = await findThumbnail(baseName);
 
         return {
-          id: baseName,
-          name: fileName, // Keep .md extension for blogs
+          id: createSlug(baseName), // URL-safe slug
+          name: baseName, // Display name (original)
           fileName: fileName,
           mimeType: getMimeType(fileName),
           modifiedTime: stats.mtime.toISOString(),
@@ -156,11 +166,46 @@ export async function listBlogs(): Promise<LocalFile[]> {
 }
 
 /**
- * Get a specific project file by ID (basename without extension)
+ * Find a file by slug - searches all files in directory and matches by slug
+ */
+async function findFileBySlug(
+  directory: string,
+  slug: string,
+  extension: string
+): Promise<string | null> {
+  try {
+    const files = await fs.readdir(directory);
+    const matchingFiles = files.filter(
+      (file) => file.endsWith(extension) && !file.startsWith(".")
+    );
+
+    for (const fileName of matchingFiles) {
+      const baseName = path.basename(fileName, extension);
+      if (createSlug(baseName) === slug) {
+        return baseName;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error finding file by slug ${slug}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get a specific project file by ID (URL-safe slug)
  */
 export async function getProjectFile(id: string): Promise<Buffer | null> {
   try {
-    const filePath = path.join(PROJECTS_DIR, `${id}.pdf`);
+    // Find the actual filename from the slug
+    const baseName = await findFileBySlug(PROJECTS_DIR, id, ".pdf");
+    if (!baseName) {
+      console.log(`[getProjectFile] No file found for slug: "${id}"`);
+      return null;
+    }
+
+    const filePath = path.join(PROJECTS_DIR, `${baseName}.pdf`);
+    console.log(`[getProjectFile] Looking for file: "${filePath}"`);
     return await fs.readFile(filePath);
   } catch (error) {
     console.error(`Error reading project file ${id}:`, error);
@@ -169,11 +214,19 @@ export async function getProjectFile(id: string): Promise<Buffer | null> {
 }
 
 /**
- * Get a specific blog file by ID (basename without extension)
+ * Get a specific blog file by ID (URL-safe slug)
  */
 export async function getBlogFile(id: string): Promise<string | null> {
   try {
-    const filePath = path.join(BLOGS_DIR, `${id}.md`);
+    // Find the actual filename from the slug
+    const baseName = await findFileBySlug(BLOGS_DIR, id, ".md");
+    if (!baseName) {
+      console.log(`[getBlogFile] No file found for slug: "${id}"`);
+      return null;
+    }
+
+    const filePath = path.join(BLOGS_DIR, `${baseName}.md`);
+    console.log(`[getBlogFile] Looking for file: "${filePath}"`);
     return await fs.readFile(filePath, "utf-8");
   } catch (error) {
     console.error(`Error reading blog file ${id}:`, error);
@@ -182,7 +235,7 @@ export async function getBlogFile(id: string): Promise<string | null> {
 }
 
 /**
- * Get project metadata by ID
+ * Get project metadata by ID (URL-safe slug)
  */
 export async function getProjectMetadata(id: string): Promise<{
   name: string;
@@ -190,12 +243,20 @@ export async function getProjectMetadata(id: string): Promise<{
   description?: string;
 } | null> {
   try {
-    const filePath = path.join(PROJECTS_DIR, `${id}.pdf`);
+    // Find the actual filename from the slug
+    const baseName = await findFileBySlug(PROJECTS_DIR, id, ".pdf");
+    if (!baseName) {
+      console.log(`[getProjectMetadata] No file found for slug: "${id}"`);
+      return null;
+    }
+
+    const filePath = path.join(PROJECTS_DIR, `${baseName}.pdf`);
+    console.log(`[getProjectMetadata] Looking for file: "${filePath}"`);
     const stats = await fs.stat(filePath);
-    const description = await readDescription(PROJECTS_DIR, id);
+    const description = await readDescription(PROJECTS_DIR, baseName);
 
     return {
-      name: id,
+      name: baseName,
       modifiedTime: stats.mtime.toISOString(),
       description,
     };

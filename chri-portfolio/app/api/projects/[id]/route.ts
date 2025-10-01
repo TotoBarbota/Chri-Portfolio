@@ -9,6 +9,8 @@ export async function GET(
   const { id } = await params;
   const fileId = id;
 
+  console.log(`[API] Received project ID: "${fileId}"`);
+
   if (!fileId) {
     return NextResponse.json(
       { message: "Project ID is required" },
