@@ -8,12 +8,12 @@ export async function GET() {
     const blogs = await listBlogs();
 
     return NextResponse.json({
-      projects: projects.map(p => ({
+      projects: projects.map((p) => ({
         id: p.id,
         name: p.name,
         fileName: p.fileName,
       })),
-      blogs: blogs.map(b => ({
+      blogs: blogs.map((b) => ({
         id: b.id,
         name: b.name,
         fileName: b.fileName,

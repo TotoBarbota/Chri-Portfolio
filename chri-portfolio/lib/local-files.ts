@@ -182,30 +182,39 @@ async function findFileBySlug(
   extension: string
 ): Promise<string | null> {
   try {
-    console.log(`[findFileBySlug] Searching for slug: "${slug}" in ${directory} with extension ${extension}`);
+    console.log(
+      `[findFileBySlug] Searching for slug: "${slug}" in ${directory} with extension ${extension}`
+    );
     const files = await fs.readdir(directory);
     const matchingFiles = files.filter(
       (file) => file.endsWith(extension) && !file.startsWith(".")
     );
-    
-    console.log(`[findFileBySlug] Found ${matchingFiles.length} files with extension ${extension}`);
+
+    console.log(
+      `[findFileBySlug] Found ${matchingFiles.length} files with extension ${extension}`
+    );
     console.log(`[findFileBySlug] Files: ${JSON.stringify(matchingFiles)}`);
 
     for (const fileName of matchingFiles) {
       const baseName = path.basename(fileName, extension);
       const fileSlug = createSlug(baseName);
-      console.log(`[findFileBySlug] Checking file: "${fileName}" -> baseName: "${baseName}" -> slug: "${fileSlug}"`);
-      
+      console.log(
+        `[findFileBySlug] Checking file: "${fileName}" -> baseName: "${baseName}" -> slug: "${fileSlug}"`
+      );
+
       if (fileSlug === slug) {
         console.log(`[findFileBySlug] ✓ MATCH FOUND: "${baseName}"`);
         return baseName;
       }
     }
-    
+
     console.log(`[findFileBySlug] ✗ No match found for slug: "${slug}"`);
     return null;
   } catch (error) {
-    console.error(`[findFileBySlug] Error finding file by slug ${slug}:`, error);
+    console.error(
+      `[findFileBySlug] Error finding file by slug ${slug}:`,
+      error
+    );
     return null;
   }
 }

@@ -39,8 +39,10 @@ export async function GET(
         { status: 404 }
       );
     }
-    
-    console.log(`[API Metadata] Successfully found metadata for: "${metadata.name}"`);
+
+    console.log(
+      `[API Metadata] Successfully found metadata for: "${metadata.name}"`
+    );
 
     return NextResponse.json(
       {

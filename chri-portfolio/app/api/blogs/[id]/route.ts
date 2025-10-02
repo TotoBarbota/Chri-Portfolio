@@ -50,7 +50,7 @@ export async function GET(
       console.error(`[API Blog] File not found for slug: "${fileId}"`);
       return NextResponse.json(
         { message: "Blog post not found", slug: fileId },
-        { 
+        {
           status: 404,
           headers: {
             "Access-Control-Allow-Origin": "*",
@@ -58,7 +58,7 @@ export async function GET(
         }
       );
     }
-    
+
     console.log(`[API Blog] Successfully loaded blog content`);
 
     // Use gray-matter to parse frontmatter and content

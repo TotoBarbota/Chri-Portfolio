@@ -36,12 +36,14 @@ export async function GET(
     if (!fileBuffer) {
       console.error(`[API] File not found for slug: "${fileId}"`);
       return NextResponse.json(
-        { message: "File not found.", slug: fileId }, 
+        { message: "File not found.", slug: fileId },
         { status: 404 }
       );
     }
-    
-    console.log(`[API] Successfully loaded project file, size: ${fileBuffer.length} bytes`);
+
+    console.log(
+      `[API] Successfully loaded project file, size: ${fileBuffer.length} bytes`
+    );
 
     return new NextResponse(fileBuffer as unknown as BodyInit, {
       status: 200,
