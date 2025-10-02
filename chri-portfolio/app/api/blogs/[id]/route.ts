@@ -29,6 +29,7 @@ export async function GET(
   const fileId = id;
 
   console.log(`[API Blog] Received blog ID: "${fileId}"`);
+  console.log(`[API Blog] Full URL: ${request.url}`);
 
   if (!fileId) {
     return NextResponse.json(
@@ -46,11 +47,19 @@ export async function GET(
     const markdownContent = await getBlogFile(fileId);
 
     if (!markdownContent) {
+      console.error(`[API Blog] File not found for slug: "${fileId}"`);
       return NextResponse.json(
-        { message: "Blog post not found" },
-        { status: 404 }
+        { message: "Blog post not found", slug: fileId },
+        { 
+          status: 404,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+        }
       );
     }
+    
+    console.log(`[API Blog] Successfully loaded blog content`);
 
     // Use gray-matter to parse frontmatter and content
     const { data: frontmatter, content } = matter(markdownContent);

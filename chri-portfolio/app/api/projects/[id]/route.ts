@@ -21,6 +21,7 @@ export async function GET(
   const fileId = id;
 
   console.log(`[API] Received project ID: "${fileId}"`);
+  console.log(`[API] Full URL: ${request.url}`);
 
   if (!fileId) {
     return NextResponse.json(
@@ -33,8 +34,14 @@ export async function GET(
     const fileBuffer = await getProjectFile(fileId);
 
     if (!fileBuffer) {
-      return NextResponse.json({ message: "File not found." }, { status: 404 });
+      console.error(`[API] File not found for slug: "${fileId}"`);
+      return NextResponse.json(
+        { message: "File not found.", slug: fileId }, 
+        { status: 404 }
+      );
     }
+    
+    console.log(`[API] Successfully loaded project file, size: ${fileBuffer.length} bytes`);
 
     return new NextResponse(fileBuffer as unknown as BodyInit, {
       status: 200,

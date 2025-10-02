@@ -20,6 +20,7 @@ export async function GET(
   const fileId = params.id;
 
   console.log(`[API Metadata] Received project ID: "${fileId}"`);
+  console.log(`[API Metadata] Full URL: ${request.url}`);
 
   try {
     if (!fileId) {
@@ -32,11 +33,14 @@ export async function GET(
     const metadata = await getProjectMetadata(fileId);
 
     if (!metadata) {
+      console.error(`[API Metadata] File not found for slug: "${fileId}"`);
       return NextResponse.json(
-        { error: "File metadata not found" },
+        { error: "File metadata not found", slug: fileId },
         { status: 404 }
       );
     }
+    
+    console.log(`[API Metadata] Successfully found metadata for: "${metadata.name}"`);
 
     return NextResponse.json(
       {
