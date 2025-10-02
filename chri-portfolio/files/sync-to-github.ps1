@@ -512,3 +512,4 @@ Write-Host "Your content is now synced!" -ForegroundColor Green
 Write-Host ""
 
 pause
+
