@@ -1,4 +1,4 @@
-# Sync Files to GitHub Repository
+﻿# Sync Files to GitHub Repository
 # This script syncs all content in the files folder to the GitHub repository
 # Requires: Git, GitHub CLI (will attempt to install if missing)
 

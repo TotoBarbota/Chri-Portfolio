@@ -1,4 +1,4 @@
-# Quick Sync to GitHub (No Prompts)
+﻿# Quick Sync to GitHub (No Prompts)
 # This script syncs all changes without asking for confirmation
 
 # Get directories
