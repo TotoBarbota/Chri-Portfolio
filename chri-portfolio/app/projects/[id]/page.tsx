@@ -15,11 +15,13 @@ async function fetchProjectMetadata(
 ): Promise<ProjectMetadata | null> {
   try {
     // Use VERCEL_URL for the current deployment (works for preview branches too)
-    const baseUrl = process.env.VERCEL_URL 
+    const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-    console.log(`[fetchProjectMetadata] Fetching from: ${baseUrl}/api/projects/${fileId}/metadata`);
+    console.log(
+      `[fetchProjectMetadata] Fetching from: ${baseUrl}/api/projects/${fileId}/metadata`
+    );
 
     const res = await fetch(`${baseUrl}/api/projects/${fileId}/metadata`, {
       cache: "no-store",
@@ -30,19 +32,24 @@ async function fetchProjectMetadata(
         `[fetchProjectMetadata] Error: ${res.status} ${res.statusText}`
       );
       // Log response body for debugging
-      const errorText = await res.text().catch(() => "Unable to read error response");
+      const errorText = await res
+        .text()
+        .catch(() => "Unable to read error response");
       console.error(`[fetchProjectMetadata] Response body: ${errorText}`);
       return null;
     }
 
     const data = await res.json();
-    console.log(`[fetchProjectMetadata] Successfully fetched metadata for: ${data.name}`);
+    console.log(
+      `[fetchProjectMetadata] Successfully fetched metadata for: ${data.name}`
+    );
     return data;
   } catch (err) {
     console.error("[fetchProjectMetadata] Exception:", err);
     return null;
   }
-}export default async function ProjectDetailPage({
+}
+export default async function ProjectDetailPage({
   params,
 }: {
   params: ProjectDetailPageProps;
@@ -56,7 +63,7 @@ async function fetchProjectMetadata(
 
   // Try to get metadata, but don't fail if it's not available
   const metadata = await fetchProjectMetadata(fileId);
-  
+
   // Use relative URL for PDF so it works on all deployments (preview, production, local)
   const pdfUrl = `/api/projects/${fileId}`;
 
@@ -71,7 +78,8 @@ async function fetchProjectMetadata(
           </h1>
           {metadata.modifiedTime && (
             <p className="text-sm text-gray-500">
-              Last updated: {new Date(metadata.modifiedTime).toLocaleDateString()}
+              Last updated:{" "}
+              {new Date(metadata.modifiedTime).toLocaleDateString()}
             </p>
           )}
         </div>
