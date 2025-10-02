@@ -3,7 +3,7 @@
 
 # Get directories
 $FilesDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$RepoRoot = Split-Path -Parent $FilesDir
+$RepoRoot = Split-Path -Parent (Split-Path -Parent $FilesDir)
 
 # Change to repository root
 Set-Location $RepoRoot
@@ -180,7 +180,7 @@ if (-not $status) {
 Write-Host "Syncing changes to GitHub..." -ForegroundColor Cyan
 Write-Host "Including: Projects, Blogs, Pictures, Blog-Images, and Resume" -ForegroundColor DarkGray
 
-git add files/
+git add chri-portfolio/files/
 $commitMessage = "Update content: $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
 git commit -m $commitMessage
 git push origin $currentBranch

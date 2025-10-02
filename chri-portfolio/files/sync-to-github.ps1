@@ -43,8 +43,8 @@ $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIde
 # Get the script's directory (files folder)
 $FilesDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Get the repository root (one level up from files folder)
-$RepoRoot = Split-Path -Parent $FilesDir
+# Get the repository root (two levels up from files folder)
+$RepoRoot = Split-Path -Parent (Split-Path -Parent $FilesDir)
 
 # Change to repository root
 Set-Location $RepoRoot
@@ -437,7 +437,7 @@ if (-not (Test-Path $resumePath)) {
 
 # Add all changes in the files directory
 Write-Host "-> Adding changes..." -ForegroundColor White
-git add files/
+git add chri-portfolio/files/
 
 # Check if there are staged changes
 $stagedChanges = git diff --cached --name-only
