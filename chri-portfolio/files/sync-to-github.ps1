@@ -18,20 +18,21 @@ function Test-CommandExists {
 function Install-WithWinget {
     param($PackageId, $PackageName)
     
-    Write-Host "→ Installing $PackageName..." -ForegroundColor Yellow
+    Write-Host "-> Installing $PackageName..." -ForegroundColor Yellow
     try {
         winget install --id $PackageId --silent --accept-package-agreements --accept-source-agreements
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "✓ $PackageName installed successfully" -ForegroundColor Green
+            Write-Host "[OK] $PackageName installed successfully" -ForegroundColor Green
             # Refresh PATH environment variable
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
             return $true
         } else {
-            Write-Host "✗ Failed to install $PackageName" -ForegroundColor Red
+            Write-Host "[X] Failed to install $PackageName" -ForegroundColor Red
             return $false
         }
     } catch {
-        Write-Host "✗ Error installing $PackageName: $_" -ForegroundColor Red
+        $errorMsg = $_.Exception.Message
+        Write-Host "[X] Error installing $PackageName : $errorMsg" -ForegroundColor Red
         return $false
     }
 }
@@ -56,7 +57,7 @@ Write-Host ""
 # Check if winget is available
 $wingetAvailable = Test-CommandExists "winget"
 if (-not $wingetAvailable) {
-    Write-Host "⚠ Warning: winget not found - cannot auto-install missing tools" -ForegroundColor Yellow
+    Write-Host "[!] Warning: winget not found - cannot auto-install missing tools" -ForegroundColor Yellow
     Write-Host "  winget comes with Windows 11 and Windows 10 (with App Installer)" -ForegroundColor DarkGray
     Write-Host ""
 }
@@ -64,14 +65,14 @@ if (-not $wingetAvailable) {
 # Check for Git
 $gitInstalled = Test-CommandExists "git"
 if (-not $gitInstalled) {
-    Write-Host "✗ Git is not installed" -ForegroundColor Red
+    Write-Host "[X] Git is not installed" -ForegroundColor Red
     
     if ($wingetAvailable) {
         Write-Host ""
         $installGit = Read-Host "Would you like to install Git now? (Y/N)"
         if ($installGit -eq 'Y' -or $installGit -eq 'y') {
             if (-not $isAdmin) {
-                Write-Host "⚠ Note: Installing without admin rights (user-level install)" -ForegroundColor Yellow
+                Write-Host "[!] Note: Installing without admin rights (user-level install)" -ForegroundColor Yellow
             }
             $success = Install-WithWinget "Git.Git" "Git"
             if (-not $success) {
@@ -84,7 +85,7 @@ if (-not $gitInstalled) {
             Start-Sleep -Seconds 2
             $gitInstalled = Test-CommandExists "git"
             if (-not $gitInstalled) {
-                Write-Host "⚠ Git installed but not in PATH yet. Please restart your terminal." -ForegroundColor Yellow
+                Write-Host "[!] Git installed but not in PATH yet. Please restart your terminal." -ForegroundColor Yellow
                 pause
                 exit 1
             }
@@ -101,31 +102,31 @@ if (-not $gitInstalled) {
 }
 
 $gitVersion = git --version
-Write-Host "✓ Git found: $gitVersion" -ForegroundColor Green
+Write-Host "[OK] Git found: $gitVersion" -ForegroundColor Green
 
 # Check for GitHub CLI
 $ghInstalled = Test-CommandExists "gh"
 if (-not $ghInstalled) {
-    Write-Host "✗ GitHub CLI is not installed" -ForegroundColor Yellow
+    Write-Host "[X] GitHub CLI is not installed" -ForegroundColor Yellow
     
     if ($wingetAvailable) {
         Write-Host ""
         $installGh = Read-Host "Would you like to install GitHub CLI now? (Y/N)"
         if ($installGh -eq 'Y' -or $installGh -eq 'y') {
             if (-not $isAdmin) {
-                Write-Host "⚠ Note: Installing without admin rights (user-level install)" -ForegroundColor Yellow
+                Write-Host "[!] Note: Installing without admin rights (user-level install)" -ForegroundColor Yellow
             }
             $success = Install-WithWinget "GitHub.cli" "GitHub CLI"
             if (-not $success) {
                 Write-Host ""
                 Write-Host "Please install GitHub CLI manually from: https://cli.github.com/" -ForegroundColor Yellow
-                Write-Host "⚠ Warning: Without GitHub CLI, authentication might be more complex" -ForegroundColor Yellow
+                Write-Host "[!] Warning: Without GitHub CLI, authentication might be more complex" -ForegroundColor Yellow
             } else {
                 # Verify installation
                 Start-Sleep -Seconds 2
                 $ghInstalled = Test-CommandExists "gh"
                 if (-not $ghInstalled) {
-                    Write-Host "⚠ GitHub CLI installed but not in PATH yet. Please restart your terminal." -ForegroundColor Yellow
+                    Write-Host "[!] GitHub CLI installed but not in PATH yet. Please restart your terminal." -ForegroundColor Yellow
                 }
             }
         }
@@ -136,7 +137,7 @@ if (-not $ghInstalled) {
 
 if ($ghInstalled) {
     $ghVersion = gh --version | Select-Object -First 1
-    Write-Host "✓ GitHub CLI found: $ghVersion" -ForegroundColor Green
+    Write-Host "[OK] GitHub CLI found: $ghVersion" -ForegroundColor Green
     
     # Check GitHub authentication status
     Write-Host ""
@@ -144,7 +145,7 @@ if ($ghInstalled) {
     
     $authStatus = gh auth status 2>&1
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "✗ Not authenticated with GitHub" -ForegroundColor Yellow
+        Write-Host "[X] Not authenticated with GitHub" -ForegroundColor Yellow
         Write-Host ""
         $authenticate = Read-Host "Would you like to authenticate now? (Y/N)"
         if ($authenticate -eq 'Y' -or $authenticate -eq 'y') {
@@ -156,16 +157,16 @@ if ($ghInstalled) {
             gh auth login --web --git-protocol https
             
             if ($LASTEXITCODE -eq 0) {
-                Write-Host "✓ Successfully authenticated with GitHub" -ForegroundColor Green
+                Write-Host "[OK] Successfully authenticated with GitHub" -ForegroundColor Green
             } else {
-                Write-Host "✗ Authentication failed or was cancelled" -ForegroundColor Red
+                Write-Host "[X] Authentication failed or was cancelled" -ForegroundColor Red
                 Write-Host "You can authenticate later by running: gh auth login" -ForegroundColor Yellow
             }
         } else {
-            Write-Host "⚠ Skipping authentication - push to GitHub may fail" -ForegroundColor Yellow
+            Write-Host "[!] Skipping authentication - push to GitHub may fail" -ForegroundColor Yellow
         }
     } else {
-        Write-Host "✓ Already authenticated with GitHub" -ForegroundColor Green
+        Write-Host "[OK] Already authenticated with GitHub" -ForegroundColor Green
         # Show account info
         $authStatus | Select-String "Logged in to" | ForEach-Object { 
             Write-Host "  $_" -ForegroundColor DarkGray 
@@ -177,7 +178,7 @@ Write-Host ""
 
 # Check if we're in a git repository
 if (-not (Test-Path ".git")) {
-    Write-Host "✗ Error: Not a git repository" -ForegroundColor Red
+    Write-Host "[X] Error: Not a git repository" -ForegroundColor Red
     Write-Host "Please run this script from within the repository" -ForegroundColor Yellow
     pause
     exit 1
@@ -190,7 +191,7 @@ $gitUserName = git config user.name
 $gitUserEmail = git config user.email
 
 if (-not $gitUserName -or -not $gitUserEmail) {
-    Write-Host "✗ Git user information not configured" -ForegroundColor Yellow
+    Write-Host "[X] Git user information not configured" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Git needs your identity to create commits." -ForegroundColor White
     Write-Host "This information will be associated with your commits." -ForegroundColor DarkGray
@@ -203,13 +204,13 @@ if (-not $gitUserName -or -not $gitUserEmail) {
         
         if ([string]::IsNullOrWhiteSpace($newUserName)) {
             Write-Host ""
-            Write-Host "✗ Name cannot be empty" -ForegroundColor Red
+            Write-Host "[X] Name cannot be empty" -ForegroundColor Red
             pause
             exit 1
         }
         
         git config user.name "$newUserName"
-        Write-Host "✓ Git username set to: $newUserName" -ForegroundColor Green
+        Write-Host "[OK] Git username set to: $newUserName" -ForegroundColor Green
         Write-Host ""
     }
     
@@ -220,22 +221,22 @@ if (-not $gitUserName -or -not $gitUserEmail) {
         
         if ([string]::IsNullOrWhiteSpace($newUserEmail)) {
             Write-Host ""
-            Write-Host "✗ Email cannot be empty" -ForegroundColor Red
+            Write-Host "[X] Email cannot be empty" -ForegroundColor Red
             pause
             exit 1
         }
         
         git config user.email "$newUserEmail"
-        Write-Host "✓ Git email set to: $newUserEmail" -ForegroundColor Green
+        Write-Host "[OK] Git email set to: $newUserEmail" -ForegroundColor Green
         Write-Host ""
     }
     
-    Write-Host "───────────────────────────────────────────" -ForegroundColor DarkGray
+    Write-Host "-------------------------------------------" -ForegroundColor DarkGray
     Write-Host "Git configuration saved!" -ForegroundColor Green
     Write-Host "Future commits will use: $newUserName <$newUserEmail>" -ForegroundColor White
-    Write-Host "───────────────────────────────────────────" -ForegroundColor DarkGray
+    Write-Host "-------------------------------------------" -ForegroundColor DarkGray
 } else {
-    Write-Host "✓ Git configured as: $gitUserName <$gitUserEmail>" -ForegroundColor Green
+    Write-Host "[OK] Git configured as: $gitUserName <$gitUserEmail>" -ForegroundColor Green
 }
 
 Write-Host ""
@@ -259,28 +260,28 @@ if ($remoteCommit -and $localCommit -ne $remoteCommit) {
     if ($mergeBase -eq $localCommit) {
         # Local is behind, can fast-forward
         Write-Host "" 
-        Write-Host "⚠ Your local repository is behind the remote" -ForegroundColor Yellow
+        Write-Host "[!] Your local repository is behind the remote" -ForegroundColor Yellow
         Write-Host ""
         $pull = Read-Host "Pull latest changes before syncing? (Y/N)"
         if ($pull -eq 'Y' -or $pull -eq 'y') {
             Write-Host ""
-            Write-Host "→ Pulling latest changes..." -ForegroundColor White
+            Write-Host "-> Pulling latest changes..." -ForegroundColor White
             git pull origin $currentBranch --ff-only
             if ($LASTEXITCODE -eq 0) {
-                Write-Host "✓ Updated to latest version" -ForegroundColor Green
+                Write-Host "[OK] Updated to latest version" -ForegroundColor Green
             } else {
-                Write-Host "✗ Error pulling changes" -ForegroundColor Red
+                Write-Host "[X] Error pulling changes" -ForegroundColor Red
                 pause
                 exit 1
             }
         } else {
-            Write-Host "⚠ Warning: Proceeding without pulling may cause push to fail" -ForegroundColor Yellow
+            Write-Host "[!] Warning: Proceeding without pulling may cause push to fail" -ForegroundColor Yellow
         }
     }
     elseif ($mergeBase -ne $remoteCommit) {
         # Branches have diverged
         Write-Host "" 
-        Write-Host "✗ Error: Local and remote branches have diverged" -ForegroundColor Red
+        Write-Host "[X] Error: Local and remote branches have diverged" -ForegroundColor Red
         Write-Host ""
         Write-Host "This means you have local commits that conflict with remote commits." -ForegroundColor Yellow
         Write-Host "You need to resolve this manually:" -ForegroundColor Yellow
@@ -337,9 +338,9 @@ function Repair-FilenamesInDirectory {
             
             # Check if target already exists
             if (Test-Path $newPath) {
-                Write-Host "⚠ Warning: Cannot rename '$($file.Name)' to '$newName' - target exists" -ForegroundColor Yellow
+                Write-Host "[!] Warning: Cannot rename '$($file.Name)' to '$newName' - target exists" -ForegroundColor Yellow
             } else {
-                Write-Host "→ Renaming: '$($file.Name)' → '$newName'" -ForegroundColor Yellow
+                Write-Host "-> Renaming: '$($file.Name)' -> '$newName'" -ForegroundColor Yellow
                 Rename-Item -Path $file.FullName -NewName $newName -Force
                 $renamedFiles += $newName
             }
@@ -384,10 +385,10 @@ if (Test-Path $picturesDir) {
 }
 
 if ($renamedCount -gt 0) {
-    Write-Host "✓ Fixed $renamedCount filename(s)" -ForegroundColor Green
+    Write-Host "[OK] Fixed $renamedCount filename(s)" -ForegroundColor Green
     Write-Host ""
 } else {
-    Write-Host "✓ All filenames are valid" -ForegroundColor Green
+    Write-Host "[OK] All filenames are valid" -ForegroundColor Green
     Write-Host ""
 }
 
@@ -397,7 +398,7 @@ Write-Host "Checking for changes..." -ForegroundColor Cyan
 $status = git status --porcelain
 
 if (-not $status) {
-    Write-Host "✓ No changes to commit" -ForegroundColor Green
+    Write-Host "[OK] No changes to commit" -ForegroundColor Green
     Write-Host ""
     Write-Host "All files are already up to date!" -ForegroundColor Green
     pause
@@ -407,9 +408,9 @@ if (-not $status) {
 # Show changes
 Write-Host ""
 Write-Host "Found changes in:" -ForegroundColor Yellow
-Write-Host "─────────────────────────────────" -ForegroundColor DarkGray
+Write-Host "---------------------------------" -ForegroundColor DarkGray
 git status --short
-Write-Host "─────────────────────────────────" -ForegroundColor DarkGray
+Write-Host "---------------------------------" -ForegroundColor DarkGray
 Write-Host ""
 
 # Ask for confirmation
@@ -429,20 +430,20 @@ Write-Host ""
 # Check if resume.pdf exists and warn if not
 $resumePath = Join-Path $FilesDir "resume.pdf"
 if (-not (Test-Path $resumePath)) {
-    Write-Host "⚠ Warning: resume.pdf not found in files directory" -ForegroundColor Yellow
+    Write-Host "[!] Warning: resume.pdf not found in files directory" -ForegroundColor Yellow
     Write-Host "  Resume downloads will not work until you add resume.pdf" -ForegroundColor DarkGray
     Write-Host ""
 }
 
 # Add all changes in the files directory
-Write-Host "→ Adding changes..." -ForegroundColor White
+Write-Host "-> Adding changes..." -ForegroundColor White
 git add files/
 
 # Check if there are staged changes
 $stagedChanges = git diff --cached --name-only
 
 if (-not $stagedChanges) {
-    Write-Host "✓ No changes to commit after staging" -ForegroundColor Green
+    Write-Host "[OK] No changes to commit after staging" -ForegroundColor Green
     pause
     exit 0
 }
@@ -450,9 +451,9 @@ if (-not $stagedChanges) {
 # Show what will be committed
 Write-Host ""
 Write-Host "Files to be committed:" -ForegroundColor Yellow
-Write-Host "─────────────────────────────────" -ForegroundColor DarkGray
+Write-Host "---------------------------------" -ForegroundColor DarkGray
 $stagedChanges | ForEach-Object { Write-Host "  $_" -ForegroundColor White }
-Write-Host "─────────────────────────────────" -ForegroundColor DarkGray
+Write-Host "---------------------------------" -ForegroundColor DarkGray
 Write-Host ""
 
 # Ask for commit message
@@ -467,12 +468,13 @@ if ([string]::IsNullOrWhiteSpace($commitMessage)) {
 
 # Commit changes
 Write-Host ""
-Write-Host "→ Committing changes..." -ForegroundColor White
+Write-Host "-> Committing changes..." -ForegroundColor White
 try {
     git commit -m $commitMessage
-    Write-Host "✓ Changes committed successfully" -ForegroundColor Green
+    Write-Host "[OK] Changes committed successfully" -ForegroundColor Green
 } catch {
-    Write-Host "✗ Error committing changes: $_" -ForegroundColor Red
+    $errorMsg = $_.Exception.Message
+    Write-Host "[X] Error committing changes : $errorMsg" -ForegroundColor Red
     pause
     exit 1
 }
@@ -481,12 +483,13 @@ try {
 Write-Host ""
 Write-Host "Pushing to branch: $currentBranch" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "→ Pushing to GitHub..." -ForegroundColor White
+Write-Host "-> Pushing to GitHub..." -ForegroundColor White
 try {
     git push origin $currentBranch
-    Write-Host "✓ Changes pushed to GitHub successfully!" -ForegroundColor Green
+    Write-Host "[OK] Changes pushed to GitHub successfully!" -ForegroundColor Green
 } catch {
-    Write-Host "✗ Error pushing to GitHub: $_" -ForegroundColor Red
+    $errorMsg = $_.Exception.Message
+    Write-Host "[X] Error pushing to GitHub : $errorMsg" -ForegroundColor Red
     Write-Host ""
     Write-Host "This might happen if:" -ForegroundColor Yellow
     Write-Host "  1. You're not authenticated with GitHub" -ForegroundColor Yellow
@@ -505,8 +508,8 @@ Write-Host "  Sync Complete!" -ForegroundColor Green
 Write-Host "================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Summary:" -ForegroundColor White
-Write-Host "  ✓ Changes committed" -ForegroundColor Green
-Write-Host "  ✓ Pushed to GitHub ($currentBranch)" -ForegroundColor Green
+Write-Host "  [OK] Changes committed" -ForegroundColor Green
+Write-Host "  [OK] Pushed to GitHub ($currentBranch)" -ForegroundColor Green
 Write-Host ""
 Write-Host "Your content is now synced!" -ForegroundColor Green
 Write-Host ""
