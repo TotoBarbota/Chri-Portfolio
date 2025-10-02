@@ -15,9 +15,11 @@ async function fetchProjectMetadata(
 ): Promise<ProjectMetadata | null> {
   try {
     // Use VERCEL_URL for the current deployment (works for preview branches too)
-    const baseUrl = process.env.VERCEL_URL
+    const baseUrl = process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+    console.log(`[fetchProjectMetadata] Fetching from: ${baseUrl}/api/projects/${fileId}/metadata`);
 
     const res = await fetch(`${baseUrl}/api/projects/${fileId}/metadata`, {
       cache: "no-store",
@@ -25,19 +27,22 @@ async function fetchProjectMetadata(
 
     if (!res.ok) {
       console.error(
-        `Error fetching project metadata: ${res.status} ${res.statusText}`
+        `[fetchProjectMetadata] Error: ${res.status} ${res.statusText}`
       );
+      // Log response body for debugging
+      const errorText = await res.text().catch(() => "Unable to read error response");
+      console.error(`[fetchProjectMetadata] Response body: ${errorText}`);
       return null;
     }
 
-    return await res.json();
+    const data = await res.json();
+    console.log(`[fetchProjectMetadata] Successfully fetched metadata for: ${data.name}`);
+    return data;
   } catch (err) {
-    console.error("Error fetching project metadata:", err);
+    console.error("[fetchProjectMetadata] Exception:", err);
     return null;
   }
-}
-
-export default async function ProjectDetailPage({
+}export default async function ProjectDetailPage({
   params,
 }: {
   params: ProjectDetailPageProps;
@@ -49,33 +54,28 @@ export default async function ProjectDetailPage({
     notFound();
   }
 
+  // Try to get metadata, but don't fail if it's not available
   const metadata = await fetchProjectMetadata(fileId);
-  if (metadata) {
-    metadata.name = metadata.name.replace(/\.[^.]+$/, "");
-  }
-
+  
   // Use relative URL for PDF so it works on all deployments (preview, production, local)
   const pdfUrl = `/api/projects/${fileId}`;
 
-  if (!metadata) {
-    return (
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Project Not Found</h1>
-        <p>Could not load project details. Please try again later.</p>
-      </div>
-    );
-  }
-
+  // Even if metadata fails, we can still show the PDF
+  // The PDF viewer will handle 404 if the file doesn't exist
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{metadata.name}</h1>
-        {metadata.modifiedTime && (
-          <p className="text-sm text-gray-500">
-            Last updated: {new Date(metadata.modifiedTime).toLocaleDateString()}
-          </p>
-        )}
-      </div>
+      {metadata && (
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">
+            {metadata.name.replace(/\.[^.]+$/, "")}
+          </h1>
+          {metadata.modifiedTime && (
+            <p className="text-sm text-gray-500">
+              Last updated: {new Date(metadata.modifiedTime).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      )}
       <div className="border rounded-lg overflow-hidden">
         <PdfViewerClient pdfUrl={pdfUrl} />
       </div>
