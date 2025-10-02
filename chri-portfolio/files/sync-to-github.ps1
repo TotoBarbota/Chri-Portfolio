@@ -296,7 +296,101 @@ if ($remoteCommit -and $localCommit -ne $remoteCommit) {
     }
 }
 
+# Function to sanitize filename
+function Get-SanitizedFilename {
+    param($Filename)
+    
+    # Replace colons with double dash
+    $sanitized = $Filename -replace ':', '--'
+    
+    # Replace spaces and other invalid chars with single dash
+    $sanitized = $sanitized -replace '[^a-zA-Z0-9_.-]', '-'
+    
+    # Remove consecutive dashes (except double dash which represents colon)
+    while ($sanitized -match '---') {
+        $sanitized = $sanitized -replace '---', '--'
+    }
+    
+    # Remove leading/trailing dashes
+    $sanitized = $sanitized -replace '^-+|-+$', ''
+    
+    return $sanitized
+}
+
+# Function to validate and rename files in a directory
+function Repair-FilenamesInDirectory {
+    param($Directory, $Extensions)
+    
+    $renamedFiles = @()
+    
+    Get-ChildItem -Path $Directory -File | Where-Object {
+        $Extensions -contains $_.Extension
+    } | ForEach-Object {
+        $file = $_
+        $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+        $extension = $file.Extension
+        $sanitized = Get-SanitizedFilename $baseName
+        
+        if ($baseName -ne $sanitized) {
+            $newName = "$sanitized$extension"
+            $newPath = Join-Path $Directory $newName
+            
+            # Check if target already exists
+            if (Test-Path $newPath) {
+                Write-Host "⚠ Warning: Cannot rename '$($file.Name)' to '$newName' - target exists" -ForegroundColor Yellow
+            } else {
+                Write-Host "→ Renaming: '$($file.Name)' → '$newName'" -ForegroundColor Yellow
+                Rename-Item -Path $file.FullName -NewName $newName -Force
+                $renamedFiles += $newName
+            }
+        }
+    }
+    
+    return $renamedFiles
+}
+
 Write-Host ""
+Write-Host "Validating filenames..." -ForegroundColor Cyan
+Write-Host ""
+
+$renamedCount = 0
+
+# Check Projects folder (PDFs and descriptions)
+$projectsDir = Join-Path $FilesDir "Projects"
+if (Test-Path $projectsDir) {
+    $renamed = Repair-FilenamesInDirectory $projectsDir @('.pdf', '.description')
+    $renamedCount += $renamed.Count
+}
+
+# Check Blogs folder (Markdown files and descriptions)
+$blogsDir = Join-Path $FilesDir "Blogs"
+if (Test-Path $blogsDir) {
+    $renamed = Repair-FilenamesInDirectory $blogsDir @('.md', '.description')
+    $renamedCount += $renamed.Count
+}
+
+# Check Blog-Images folder (All image types)
+$blogImagesDir = Join-Path $FilesDir "Blog-Images"
+if (Test-Path $blogImagesDir) {
+    $renamed = Repair-FilenamesInDirectory $blogImagesDir @('.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp')
+    $renamedCount += $renamed.Count
+}
+
+# Check Pictures folder (All image types)
+$picturesDir = Join-Path $FilesDir "Pictures"
+if (Test-Path $picturesDir) {
+    $renamed = Repair-FilenamesInDirectory $picturesDir @('.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp')
+    $renamedCount += $renamed.Count
+}
+
+if ($renamedCount -gt 0) {
+    Write-Host "✓ Fixed $renamedCount filename(s)" -ForegroundColor Green
+    Write-Host ""
+} else {
+    Write-Host "✓ All filenames are valid" -ForegroundColor Green
+    Write-Host ""
+}
+
 Write-Host "Checking for changes..." -ForegroundColor Cyan
 
 # Check git status

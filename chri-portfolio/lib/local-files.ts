@@ -21,13 +21,21 @@ export type LocalFile = {
 };
 
 /**
- * Convert a filename to a URL-safe slug
+ * Convert a filename to a URL-safe slug (just lowercase since files are already sanitized)
  */
 function createSlug(filename: string): string {
+  return filename.toLowerCase();
+}
+
+/**
+ * Convert a sanitized filename to a display name
+ * Single dash (-) becomes space, double dash (--) becomes colon with space (: )
+ */
+function formatDisplayName(filename: string): string {
   return filename
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric chars with hyphens
-    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+    .replace(/--/g, ":::COLON:::") // Temporarily replace -- with placeholder
+    .replace(/-/g, " ") // Replace single - with space
+    .replace(/:::COLON:::/g, ": "); // Replace placeholder with colon and space
 }
 
 /**
@@ -102,8 +110,8 @@ export async function listProjects(): Promise<LocalFile[]> {
         const thumbnailPath = await findThumbnail(baseName);
 
         return {
-          id: createSlug(baseName), // URL-safe slug
-          name: baseName, // Display name (original)
+          id: createSlug(baseName), // URL-safe slug (lowercase)
+          name: formatDisplayName(baseName), // Display name with spaces and colons
           fileName: fileName,
           mimeType: getMimeType(fileName),
           modifiedTime: stats.mtime.toISOString(),
@@ -143,8 +151,8 @@ export async function listBlogs(): Promise<LocalFile[]> {
         const thumbnailPath = await findThumbnail(baseName);
 
         return {
-          id: createSlug(baseName), // URL-safe slug
-          name: baseName, // Display name (original)
+          id: createSlug(baseName), // URL-safe slug (lowercase)
+          name: formatDisplayName(baseName), // Display name with spaces and colons
           fileName: fileName,
           mimeType: getMimeType(fileName),
           modifiedTime: stats.mtime.toISOString(),
