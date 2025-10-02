@@ -135,16 +135,8 @@ const BlogDetailPage = () => {
 
     async function fetchBlogContent() {
       try {
-        let baseUrl =
-          process.env.NEXT_PUBLIC_BASE_URL ||
-          (process.env.VERCEL_URL
-            ? `https://${process.env.VERCEL_URL}`
-            : "http://localhost:3000");
-
-        // Remove trailing slash to avoid double slashes
-        baseUrl = baseUrl.replace(/\/$/, "");
-
-        const res = await fetch(`${baseUrl}/api/blogs/${fileId}`);
+        // Use relative URL for client-side fetches to work on all deployments
+        const res = await fetch(`/api/blogs/${fileId}`);
         if (!res.ok) {
           const errorData = await res.json().catch(() => null);
           const errorMessage =

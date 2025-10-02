@@ -14,14 +14,10 @@ async function fetchProjectMetadata(
   fileId: string
 ): Promise<ProjectMetadata | null> {
   try {
-    let baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000");
-
-    // Remove trailing slash to avoid double slashes
-    baseUrl = baseUrl.replace(/\/$/, "");
+    // Use VERCEL_URL for the current deployment (works for preview branches too)
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     const res = await fetch(`${baseUrl}/api/projects/${fileId}/metadata`, {
       cache: "no-store",
@@ -58,13 +54,8 @@ export default async function ProjectDetailPage({
     metadata.name = metadata.name.replace(/\.[^.]+$/, "");
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000");
-
-  const pdfUrl = `${baseUrl}/api/projects/${fileId}`;
+  // Use relative URL for PDF so it works on all deployments (preview, production, local)
+  const pdfUrl = `/api/projects/${fileId}`;
 
   if (!metadata) {
     return (
