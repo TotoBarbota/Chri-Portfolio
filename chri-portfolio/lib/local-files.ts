@@ -283,7 +283,7 @@ export async function getProjectMetadata(id: string): Promise<{
     const description = await readDescription(PROJECTS_DIR, baseName);
 
     return {
-      name: baseName,
+      name: formatDisplayName(baseName), // Format display name with spaces and colons
       modifiedTime: stats.mtime.toISOString(),
       description,
     };

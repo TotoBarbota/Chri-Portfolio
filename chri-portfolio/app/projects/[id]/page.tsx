@@ -74,7 +74,7 @@ export default async function ProjectDetailPage({
       {metadata && (
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">
-            {metadata.name.replace(/\.[^.]+$/, "")}
+            {metadata.name}
           </h1>
           {metadata.modifiedTime && (
             <p className="text-sm text-gray-500">
