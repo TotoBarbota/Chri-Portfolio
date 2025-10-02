@@ -71,7 +71,7 @@ export default async function ProjectDetailPage({
   // The PDF viewer will handle 404 if the file doesn't exist
   return (
     <div className="container mx-auto p-4">
-      {metadata && (
+      {metadata ? (
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">
             {metadata.name ? metadata.name : "Untitled Project"}
@@ -85,6 +85,8 @@ export default async function ProjectDetailPage({
             <p>Unknown last updated date</p>
           )}
         </div>
+      ) : (
+        <div>No metadata found</div>
       )}
       <div className="border rounded-lg overflow-hidden">
         <PdfViewerClient pdfUrl={pdfUrl} />
