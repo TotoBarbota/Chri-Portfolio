@@ -240,22 +240,74 @@ if (-not $gitUserName -or -not $gitUserEmail) {
 }
 
 Write-Host ""
+
+# Get current branch
+$currentBranch = git branch --show-current
+Write-Host "Current branch: $currentBranch" -ForegroundColor Yellow
+Write-Host ""
+
+# Ask which branch to sync to
+Write-Host "Which branch do you want to sync to?" -ForegroundColor Cyan
+Write-Host "  1. Current branch ($currentBranch)" -ForegroundColor White
+Write-Host "  2. main" -ForegroundColor White
+Write-Host "  3. Feature-local" -ForegroundColor White
+Write-Host "  4. Custom branch name" -ForegroundColor White
+Write-Host ""
+$branchChoice = Read-Host "Enter choice (1-4, or press Enter for current)"
+
+if ([string]::IsNullOrWhiteSpace($branchChoice) -or $branchChoice -eq '1') {
+    $targetBranch = $currentBranch
+} elseif ($branchChoice -eq '2') {
+    $targetBranch = 'main'
+} elseif ($branchChoice -eq '3') {
+    $targetBranch = 'Feature-local'
+} elseif ($branchChoice -eq '4') {
+    Write-Host ""
+    $customBranch = Read-Host "Enter branch name"
+    if ([string]::IsNullOrWhiteSpace($customBranch)) {
+        Write-Host "[X] Branch name cannot be empty" -ForegroundColor Red
+        pause
+        exit 1
+    }
+    $targetBranch = $customBranch
+} else {
+    Write-Host "[!] Invalid choice, using current branch" -ForegroundColor Yellow
+    $targetBranch = $currentBranch
+}
+
+Write-Host ""
+Write-Host "Target branch: $targetBranch" -ForegroundColor Green
+
+Write-Host ""
 Write-Host "Checking remote repository..." -ForegroundColor Cyan
 
 # Fetch latest changes from remote
 git fetch origin --quiet
 
-# Get current branch
-$currentBranch = git branch --show-current
-Write-Host "Current branch: $currentBranch" -ForegroundColor Yellow
+# Switch to target branch if different from current
+if ($targetBranch -ne $currentBranch) {
+    Write-Host "Switching to branch: $targetBranch" -ForegroundColor Yellow
+    git checkout $targetBranch 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[X] Error: Branch '$targetBranch' does not exist" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Available branches:" -ForegroundColor Yellow
+        git branch -a
+        Write-Host ""
+        pause
+        exit 1
+    }
+    Write-Host "[OK] Switched to $targetBranch" -ForegroundColor Green
+    Write-Host ""
+}
 
 # Check if local is behind remote
 $localCommit = git rev-parse HEAD
-$remoteCommit = git rev-parse origin/$currentBranch 2>$null
+$remoteCommit = git rev-parse origin/$targetBranch 2>$null
 
 if ($remoteCommit -and $localCommit -ne $remoteCommit) {
     # Check if we can fast-forward
-    $mergeBase = git merge-base HEAD origin/$currentBranch
+    $mergeBase = git merge-base HEAD origin/$targetBranch
     
     if ($mergeBase -eq $localCommit) {
         # Local is behind, can fast-forward
@@ -266,7 +318,7 @@ if ($remoteCommit -and $localCommit -ne $remoteCommit) {
         if ($pull -eq 'Y' -or $pull -eq 'y') {
             Write-Host ""
             Write-Host "-> Pulling latest changes..." -ForegroundColor White
-            git pull origin $currentBranch --ff-only
+            git pull origin $targetBranch --ff-only
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "[OK] Updated to latest version" -ForegroundColor Green
             } else {
@@ -287,10 +339,10 @@ if ($remoteCommit -and $localCommit -ne $remoteCommit) {
         Write-Host "You need to resolve this manually:" -ForegroundColor Yellow
         Write-Host ""
         Write-Host "  Option 1 - Merge remote changes:" -ForegroundColor Cyan
-        Write-Host "    git pull origin $currentBranch" -ForegroundColor White
+        Write-Host "    git pull origin $targetBranch" -ForegroundColor White
         Write-Host ""
         Write-Host "  Option 2 - Rebase your changes:" -ForegroundColor Cyan
-        Write-Host "    git pull --rebase origin $currentBranch" -ForegroundColor White
+        Write-Host "    git pull --rebase origin $targetBranch" -ForegroundColor White
         Write-Host ""
         pause
         exit 1
@@ -481,11 +533,11 @@ try {
 
 # Push to remote
 Write-Host ""
-Write-Host "Pushing to branch: $currentBranch" -ForegroundColor Yellow
+Write-Host "Pushing to branch: $targetBranch" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "-> Pushing to GitHub..." -ForegroundColor White
 try {
-    git push origin $currentBranch
+    git push origin $targetBranch
     Write-Host "[OK] Changes pushed to GitHub successfully!" -ForegroundColor Green
 } catch {
     $errorMsg = $_.Exception.Message
@@ -496,7 +548,7 @@ try {
     Write-Host "  2. You don't have push permissions" -ForegroundColor Yellow
     Write-Host "  3. There are conflicts with remote changes" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "Try running: git push origin $currentBranch" -ForegroundColor Cyan
+    Write-Host "Try running: git push origin $targetBranch" -ForegroundColor Cyan
     pause
     exit 1
 }
@@ -509,7 +561,7 @@ Write-Host "================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Summary:" -ForegroundColor White
 Write-Host "  [OK] Changes committed" -ForegroundColor Green
-Write-Host "  [OK] Pushed to GitHub ($currentBranch)" -ForegroundColor Green
+Write-Host "  [OK] Pushed to GitHub ($targetBranch)" -ForegroundColor Green
 Write-Host ""
 Write-Host "Your content is now synced!" -ForegroundColor Green
 Write-Host ""

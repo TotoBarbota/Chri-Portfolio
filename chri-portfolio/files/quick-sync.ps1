@@ -45,32 +45,78 @@ if (-not $gitUserName -or -not $gitUserEmail) {
     Write-Host "[OK] Git configured as: $gitUserName <$gitUserEmail>" -ForegroundColor Green
 }
 
+Write-Host ""
+
+# Get current branch
+$currentBranch = git branch --show-current
+Write-Host "Current branch: $currentBranch" -ForegroundColor Yellow
+
+# Ask which branch to sync to
+Write-Host ""
+Write-Host "Which branch do you want to sync to?" -ForegroundColor Cyan
+Write-Host "  1. Current branch ($currentBranch)" -ForegroundColor White
+Write-Host "  2. main" -ForegroundColor White
+Write-Host "  3. Feature-local" -ForegroundColor White
+Write-Host "  4. Custom branch name" -ForegroundColor White
+$branchChoice = Read-Host "Enter choice (1-4, or press Enter for current)"
+
+if ([string]::IsNullOrWhiteSpace($branchChoice) -or $branchChoice -eq '1') {
+    $targetBranch = $currentBranch
+} elseif ($branchChoice -eq '2') {
+    $targetBranch = 'main'
+} elseif ($branchChoice -eq '3') {
+    $targetBranch = 'Feature-local'
+} elseif ($branchChoice -eq '4') {
+    $customBranch = Read-Host "Enter branch name"
+    if ([string]::IsNullOrWhiteSpace($customBranch)) {
+        Write-Host "[X] Branch name cannot be empty" -ForegroundColor Red
+        exit 1
+    }
+    $targetBranch = $customBranch
+} else {
+    Write-Host "[X] Invalid choice, using current branch" -ForegroundColor Yellow
+    $targetBranch = $currentBranch
+}
+
+Write-Host "Target branch: $targetBranch" -ForegroundColor Green
+Write-Host ""
+
 # Fetch latest changes from remote
 Write-Host "Checking remote repository..." -ForegroundColor Cyan
 git fetch origin --quiet
 
-# Get current branch
-$currentBranch = git branch --show-current
+# Switch to target branch if different from current
+if ($targetBranch -ne $currentBranch) {
+    Write-Host "Switching to branch: $targetBranch" -ForegroundColor Yellow
+    git checkout $targetBranch 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[X] Error: Branch '$targetBranch' does not exist" -ForegroundColor Red
+        Write-Host "Available branches:" -ForegroundColor Yellow
+        git branch -a
+        exit 1
+    }
+    Write-Host "[OK] Switched to $targetBranch" -ForegroundColor Green
+}
 
 # Check if local is behind remote
 $localCommit = git rev-parse HEAD
-$remoteCommit = git rev-parse origin/$currentBranch 2>$null
+$remoteCommit = git rev-parse origin/$targetBranch 2>$null
 
 if ($remoteCommit -and $localCommit -ne $remoteCommit) {
     # Check if we can fast-forward
-    $mergeBase = git merge-base HEAD origin/$currentBranch
+    $mergeBase = git merge-base HEAD origin/$targetBranch
     
     if ($mergeBase -eq $localCommit) {
         # Local is behind, can fast-forward
         Write-Host "Pulling latest changes..." -ForegroundColor Yellow
-        git pull origin $currentBranch --ff-only
+        git pull origin $targetBranch --ff-only
         Write-Host "[OK] Updated to latest version" -ForegroundColor Green
     }
     elseif ($mergeBase -ne $remoteCommit) {
         # Branches have diverged
         Write-Host "[X] Error: Local and remote have diverged" -ForegroundColor Red
         Write-Host "Please resolve conflicts manually:" -ForegroundColor Yellow
-        Write-Host "  git pull origin $currentBranch" -ForegroundColor Cyan
+        Write-Host "  git pull origin $targetBranch" -ForegroundColor Cyan
         exit 1
     }
 }
@@ -183,6 +229,6 @@ Write-Host "Including: Projects, Blogs, Pictures, Blog-Images, and Resume" -Fore
 git add chri-portfolio/files/
 $commitMessage = "Update content: $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
 git commit -m $commitMessage
-git push origin $currentBranch
+git push origin $targetBranch
 
-Write-Host "[OK] Synced successfully!" -ForegroundColor Green
+Write-Host "[OK] Synced successfully to $targetBranch!" -ForegroundColor Green
