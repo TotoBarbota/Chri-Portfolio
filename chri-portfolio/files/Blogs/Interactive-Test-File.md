@@ -1,2 +1,7 @@
-# Interactive Test
-This file will test the interactive sync script.
+- Firefox
+
+- proton pass manager
+
+- proton vpn
+
+  
